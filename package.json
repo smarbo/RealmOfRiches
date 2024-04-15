@@ -1,0 +1,23 @@
+{
+  "name": "realmofriches",
+  "version": "0.1.0",
+  "description": "Hunt treasure",
+  "main": "./dist/src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./dist/src/app.js"
+  },
+  "author": "smarbo",
+  "license": "ISC",
+  "dependencies": {
+    "@types/http-server": "^0.12.4",
+    "@types/socket.io-client": "^3.0.0",
+    "express": "^4.19.2",
+    "path": "^0.12.7",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21"
+  }
+}
