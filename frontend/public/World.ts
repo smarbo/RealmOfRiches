@@ -6,15 +6,25 @@ import { OtherPlayer } from "./OtherPlayer.js";
 // @ts-ignore
 
 const socket: Socket = io();
-socket.emit("message", "Player joined.");
+let room = "";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+canvas.style.display = "none";
 canvas.width = 1440;
 canvas.height = 810;
 
 const peopleCounter = document.getElementById("people") as HTMLHeadingElement;
+peopleCounter.hidden = true;
+
+const roomButton = document.getElementById("roomButton") as HTMLButtonElement;
+const roomInput = document.getElementById("roomInput") as HTMLInputElement;
+const userInput = document.getElementById("userInput") as HTMLInputElement;
+const worldContainer = document.getElementById(
+  "worldContainer"
+) as HTMLDivElement;
 
 const ctx = canvas.getContext("2d")!;
+ctx.imageSmoothingEnabled = false;
 
 const map = new GameObject(ctx, { x: 0, y: 0 }, "assets/rormap.png");
 const foreground = new GameObject(ctx, { x: 0, y: 0 }, "assets/foreground.png");
@@ -27,7 +37,7 @@ for (let i = 0; i < collisions.length; i += 140) {
 const boundaries: Boundary[] = [];
 
 collisionsMap.forEach((row, i) => {
-  row.forEach((symbol, j) => {
+  row.forEach((symbol: number, j: number) => {
     if (symbol === 1025) {
       boundaries.push(
         new Boundary(ctx, { x: j * Boundary.width, y: i * Boundary.height })
@@ -36,12 +46,7 @@ collisionsMap.forEach((row, i) => {
   });
 });
 
-let player = new Player(
-  ctx,
-  { x: 2135, y: 1720 },
-  "assets/playerDown.png",
-  1.5
-);
+let player: Player;
 
 let players: OtherPlayer[] = [];
 
@@ -61,11 +66,10 @@ socket.on("playerUpdate", (plr: Player) => {
       img = "assets/playerRight.png";
       break;
   }
-  players.push(new OtherPlayer(ctx, plr.pos, img, plr.frames));
+  players.push(new OtherPlayer(ctx, plr.pos, img, plr.frames, plr.username));
 });
 
 function gameLoop() {
-  requestAnimationFrame(gameLoop);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.translate(
@@ -85,9 +89,9 @@ function gameLoop() {
   player.animate();
   socket.emit("playerUpdate", { ...player });
   player.draw();
-
   foreground.draw();
-
+  player.inv();
+  player.stats();
   boundaries.forEach((b) => {
     // collision detection
     if (
@@ -108,13 +112,42 @@ function gameLoop() {
       if (player.lastKey === "d") {
         player.pos.x -= 3;
       }
-      console.log("Colliding");
     }
 
     players = [];
   });
 
   ctx.restore();
+
+  requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
+roomButton.onclick = () => {
+  if (roomInput.value != "" && userInput.value != "") {
+    player = new Player(
+      ctx,
+      { x: 2135, y: 1720 },
+      "assets/playerDown.png",
+      1.5,
+      {
+        max: 4,
+        val: 0,
+        tick: 0,
+        imgs: {
+          up: new Image(),
+          left: new Image(),
+          right: new Image(),
+          down: new Image(),
+        },
+      },
+      userInput.value
+    );
+    worldContainer.hidden = true;
+    room = roomInput.value;
+    canvas.style.display = "block";
+    peopleCounter.hidden = false;
+    socket.emit("message", "Player joined.");
+    socket.emit("joinWorld", room);
+    gameLoop();
+  }
+};

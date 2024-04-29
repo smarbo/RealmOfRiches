@@ -1,7 +1,12 @@
 import { GameObject } from "./GameObject.js";
+import { Inventory } from "./Inventory.js";
+const cursor = new Image();
+cursor.src = "assets/cursor.png";
 export class Player extends GameObject {
     speed;
     frames;
+    username;
+    inventory;
     inputs;
     lastKey;
     width;
@@ -9,6 +14,10 @@ export class Player extends GameObject {
     moving = false;
     static width = 48;
     static height = 68;
+    mouse = { x: 0, y: 0 };
+    mouseOffset = { x: 0, y: 0 };
+    health = 100;
+    energy = 100;
     constructor(ctx, pos, img, speed, frames = {
         max: 4,
         val: 0,
@@ -19,15 +28,18 @@ export class Player extends GameObject {
             right: new Image(),
             down: new Image(),
         },
-    }) {
+    }, username, inventory = new Inventory(ctx)) {
         super(ctx, pos, img);
         this.speed = speed;
         this.frames = frames;
+        this.username = username;
+        this.inventory = inventory;
         this.inputs = {
             up: false,
             down: false,
             left: false,
             right: false,
+            interact: false,
         };
         this.lastKey = "";
         this.frames.imgs.up.src = "assets/playerUp.png";
@@ -36,7 +48,14 @@ export class Player extends GameObject {
         this.frames.imgs.right.src = "assets/playerRight.png";
         window.addEventListener("keydown", (e) => {
             e.preventDefault();
+            const keyNum = parseInt(e.key);
+            if (keyNum >= 1 && keyNum <= 8) {
+                this.inventory.selected = keyNum - 1;
+            }
             switch (e.key) {
+                case "e":
+                    this.inputs.interact = true;
+                    break;
                 case "w":
                     this.inputs.up = true;
                     this.lastKey = "w";
@@ -61,6 +80,9 @@ export class Player extends GameObject {
         });
         window.addEventListener("keyup", (e) => {
             switch (e.key) {
+                case "e":
+                    this.inputs.interact = false;
+                    break;
                 case "w":
                     this.inputs.up = false;
                     this.moving = false;
@@ -79,10 +101,29 @@ export class Player extends GameObject {
                     break;
             }
         });
+        window.addEventListener("wheel", (e) => {
+            if (e.deltaY > 0) {
+                this.inventory.selected -= 1;
+                if (this.inventory.selected < 0)
+                    this.inventory.selected = 7;
+            }
+            else if (e.deltaY < 0) {
+                this.inventory.selected += 1;
+                if (this.inventory.selected > 7)
+                    this.inventory.selected = 0;
+            }
+        });
+        this.ctx.canvas.addEventListener("mousemove", (e) => {
+            const rect = this.ctx.canvas.getBoundingClientRect();
+            this.mouseOffset.x = e.clientX - rect.left - this.ctx.canvas.width / 2;
+            this.mouseOffset.y = e.clientY - rect.top - this.ctx.canvas.height / 2;
+        });
         this.width = Player.width;
         this.height = Player.height;
     }
     update() {
+        this.mouse.x = this.pos.x + this.mouseOffset.x;
+        this.mouse.y = this.pos.y + this.mouseOffset.y;
         if (this.inputs.up && this.lastKey === "w") {
             this.pos.y -= this.speed;
             this.img = this.frames.imgs.up;
@@ -98,6 +139,21 @@ export class Player extends GameObject {
         if (this.inputs.right && this.lastKey === "d") {
             this.pos.x += this.speed;
             this.img = this.frames.imgs.right;
+        }
+        if (this.inputs.interact) {
+            this.health -= 1;
+        }
+        if (this.energy < 100) {
+            this.energy += 0.02;
+        }
+        if (this.energy < 0) {
+            this.energy = 0;
+        }
+        if (this.health < 100) {
+            this.health += 0.02;
+        }
+        if (this.health < 0) {
+            this.health = 0;
         }
     }
     animate() {
@@ -117,5 +173,33 @@ export class Player extends GameObject {
     }
     draw() {
         this.ctx.drawImage(this.img, this.width * this.frames.val, 0, this.img.width / this.frames.max, this.img.height, this.pos.x, this.pos.y, this.img.width / this.frames.max, this.img.height);
+    }
+    stats() {
+        // health
+        this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+        this.ctx.fillRect(this.pos.x + 24 - 175, this.pos.y + this.ctx.canvas.height / 2 - 45, 170, 20);
+        this.ctx.fillStyle = "limegreen";
+        this.ctx.fillRect(this.pos.x + 24 - 175, this.pos.y + this.ctx.canvas.height / 2 - 45, (170 * this.health) / 100, 20);
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "bold 13px Arial";
+        this.ctx.fillText(this.health.toFixed(0).toString(), this.pos.x + 24 - 167, this.pos.y + this.ctx.canvas.height / 2 - 30);
+        this.ctx.fillStyle = "rgba(255,255,255,0.7)";
+        this.ctx.font = "13px Arial";
+        this.ctx.fillText("| 100", this.pos.x + 24 - 145 + (this.health < 100 ? 0 : 5), this.pos.y + this.ctx.canvas.height / 2 - 30);
+        // energy
+        this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+        this.ctx.fillRect(this.pos.x + 24 + 5, this.pos.y + this.ctx.canvas.height / 2 - 45, 170, 20);
+        this.ctx.fillStyle = "#f0c724";
+        this.ctx.fillRect(this.pos.x + 24 + 5, this.pos.y + this.ctx.canvas.height / 2 - 45, (170 * this.energy) / 100, 20);
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "bold 13px Arial";
+        this.ctx.fillText(this.energy.toFixed(0).toString(), this.pos.x + 37, this.pos.y + this.ctx.canvas.height / 2 - 30);
+        this.ctx.fillStyle = "rgba(255,255,255,0.7)";
+        this.ctx.font = "13px Arial";
+        this.ctx.fillText("| 100", this.pos.x + (this.energy < 100 ? 59 : 64), this.pos.y + this.ctx.canvas.height / 2 - 30);
+        this.ctx.drawImage(cursor, this.mouse.x, this.mouse.y + 12, 48, 48);
+    }
+    inv() {
+        this.inventory.draw(this);
     }
 }

@@ -8,7 +8,12 @@ export class GameObject {
         this.img = new Image();
         this.img.src = img;
     }
-    draw() {
-        this.ctx.drawImage(this.img, this.pos.x, this.pos.y);
+    draw(width, height) {
+        if (width && height) {
+            this.ctx.drawImage(this.img, this.pos.x, this.pos.y, width, height);
+        }
+        else {
+            this.ctx.drawImage(this.img, this.pos.x, this.pos.y);
+        }
     }
 }

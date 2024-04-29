@@ -24,7 +24,16 @@ io.on("connection", (socket: Socket) => {
   console.log(`[SOCKET.${socket.id}]: Connected`);
 
   socket.on("playerUpdate", (player) => {
-    socket.broadcast.emit("playerUpdate", player);
+    if (Array.from(socket.rooms).filter((r) => r != socket.id)[0]) {
+      socket.broadcast
+        .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
+        .emit("playerUpdate", player);
+    }
+  });
+
+  socket.on("joinWorld", (world) => {
+    socket.join(world);
+    console.log(Array.from(socket.rooms).filter((r) => r != socket.id)[0]);
   });
 
   socket.on("message", (msg) => {

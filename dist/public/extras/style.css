@@ -3,6 +3,7 @@
   padding: 0;
   border: 0;
   box-sizing: border-box;
+  font-family: "Segoe UI";
 }
 
 body {
@@ -15,4 +16,56 @@ canvas {
   transform: translate(-50%, -50%);
   top: 50%;
   left: 50%;
+}
+
+#worldContainer {
+  background: gray;
+  width: fit-content;
+  padding: 16px;
+  text-align: center;
+  position: absolute;
+  transform: translate(50%, 50%);
+  color: White;
+}
+
+#form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+input {
+  width: 80%;
+  margin-top: 12px;
+  border-radius: 8px;
+  height: 40px;
+  text-align: center;
+  background: goldenrod;
+  color: white;
+  border: 2px solid white;
+  font-size: 1rem;
+}
+
+input::placeholder {
+  color: rgb(236, 236, 236);
+}
+
+input:focus {
+  outline: none;
+}
+
+button {
+  width: 60%;
+  margin-top: 12px;
+  border-radius: 8px;
+  height: 40px;
+  text-align: center;
+  background: white;
+  color: goldenrod;
+  border: 2px solid goldenrod;
+  font-size: 1rem;
+}
+
+canvas {
+  cursor: none;
 }

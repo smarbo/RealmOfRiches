@@ -4,14 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <title>Realm of Riches</title>
+    <title>Blades of Steel</title>
   </head>
   <body>
     <canvas id="canvas" width="800" height="450"></canvas>
-    <h1 style="color: white">
-      Players Connected:
-      <h1 style="color: White" id="people"></h1>
-    </h1>
+    <h1 id="people" style="color: white">Players Connected:</h1>
+
+    <div id="worldContainer">
+      <h2>Join a world to play Blades of Steel</h2>
+      <div id="form">
+        <input
+          type="text"
+          id="roomInput"
+          placeholder="World Code"
+          autocomplete="off"
+          autocapitalize="off"
+        />
+        <input
+          type="text"
+          id="userInput"
+          placeholder="Username"
+          autocomplete="off"
+          autocapitalize="off"
+        />
+        <button id="roomButton">Join</button>
+      </div>
+    </div>
 
     <script src="assets/data/collisions.js"></script>
     <script src="socket.io/socket.io.js"></script>

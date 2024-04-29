@@ -5,12 +5,19 @@ import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
 // @ts-ignore
 const socket = io();
-socket.emit("message", "Player joined.");
+let room = "";
 const canvas = document.getElementById("canvas");
+canvas.style.display = "none";
 canvas.width = 1440;
 canvas.height = 810;
 const peopleCounter = document.getElementById("people");
+peopleCounter.hidden = true;
+const roomButton = document.getElementById("roomButton");
+const roomInput = document.getElementById("roomInput");
+const userInput = document.getElementById("userInput");
+const worldContainer = document.getElementById("worldContainer");
 const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 const map = new GameObject(ctx, { x: 0, y: 0 }, "assets/rormap.png");
 const foreground = new GameObject(ctx, { x: 0, y: 0 }, "assets/foreground.png");
 const collisionsMap = [];
@@ -25,7 +32,7 @@ collisionsMap.forEach((row, i) => {
         }
     });
 });
-let player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", 1.5);
+let player;
 let players = [];
 socket.on("playerUpdate", (plr) => {
     let img = "";
@@ -43,10 +50,9 @@ socket.on("playerUpdate", (plr) => {
             img = "assets/playerRight.png";
             break;
     }
-    players.push(new OtherPlayer(ctx, plr.pos, img, plr.frames));
+    players.push(new OtherPlayer(ctx, plr.pos, img, plr.frames, plr.username));
 });
 function gameLoop() {
-    requestAnimationFrame(gameLoop);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(canvas.width / 2 - player.pos.x - player.img.width / 8, canvas.height / 2 - player.pos.y - player.img.height / 2);
@@ -61,6 +67,8 @@ function gameLoop() {
     socket.emit("playerUpdate", { ...player });
     player.draw();
     foreground.draw();
+    player.inv();
+    player.stats();
     boundaries.forEach((b) => {
         // collision detection
         if (player.pos.x + player.width >= b.pos.x &&
@@ -79,10 +87,31 @@ function gameLoop() {
             if (player.lastKey === "d") {
                 player.pos.x -= 3;
             }
-            console.log("Colliding");
         }
         players = [];
     });
     ctx.restore();
+    requestAnimationFrame(gameLoop);
 }
-gameLoop();
+roomButton.onclick = () => {
+    if (roomInput.value != "" && userInput.value != "") {
+        player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", 1.5, {
+            max: 4,
+            val: 0,
+            tick: 0,
+            imgs: {
+                up: new Image(),
+                left: new Image(),
+                right: new Image(),
+                down: new Image(),
+            },
+        }, userInput.value);
+        worldContainer.hidden = true;
+        room = roomInput.value;
+        canvas.style.display = "block";
+        peopleCounter.hidden = false;
+        socket.emit("message", "Player joined.");
+        socket.emit("joinWorld", room);
+        gameLoop();
+    }
+};

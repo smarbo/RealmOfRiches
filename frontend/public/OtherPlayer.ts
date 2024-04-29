@@ -34,7 +34,8 @@ export class OtherPlayer extends GameObject {
         right: new Image(),
         down: new Image(),
       },
-    }
+    },
+    public username: string
   ) {
     super(ctx, pos, img);
     this.lastKey = "";
@@ -72,5 +73,11 @@ export class OtherPlayer extends GameObject {
       this.img.width / this.frames.max,
       this.img.height
     );
+    this.ctx.font = "bold 20px arial";
+    this.ctx.lineWidth = 800;
+    this.ctx.fillStyle = "green";
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText(this.username, this.pos.x + 23, this.pos.y);
   }
 }

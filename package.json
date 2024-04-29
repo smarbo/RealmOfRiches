@@ -1,11 +1,11 @@
 {
-  "name": "realmofriches",
+  "name": "bladesofsteel",
   "version": "0.1.0",
   "description": "Hunt treasure",
   "main": "./dist/src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./dist/src/app.js"
+    "dev": "concurrently -k \"tsc -p ./backend -w\" \"tsc -p ./frontend -w\" \"nodemon ./dist/src/app.js\" "
   },
   "author": "smarbo",
   "license": "ISC",
@@ -18,6 +18,7 @@
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21"
+    "@types/express": "^4.17.21",
+    "concurrently": "^8.2.2"
   }
 }

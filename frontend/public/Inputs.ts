@@ -3,4 +3,5 @@ export type Inputs = {
   down: boolean;
   left: boolean;
   right: boolean;
+  interact: boolean;
 };

@@ -1,6 +1,7 @@
 import { GameObject } from "./GameObject.js";
 export class OtherPlayer extends GameObject {
     frames;
+    username;
     lastKey;
     width;
     height;
@@ -17,9 +18,10 @@ export class OtherPlayer extends GameObject {
             right: new Image(),
             down: new Image(),
         },
-    }) {
+    }, username) {
         super(ctx, pos, img);
         this.frames = frames;
+        this.username = username;
         this.lastKey = "";
         this.frames.imgs.up.src = "assets/playerUp.png";
         this.frames.imgs.down.src = "assets/playerDown.png";
@@ -44,5 +46,11 @@ export class OtherPlayer extends GameObject {
     }
     draw() {
         this.ctx.drawImage(this.img, this.width * this.frames.val, 0, this.img.width / this.frames.max, this.img.height, this.pos.x, this.pos.y, this.img.width / this.frames.max, this.img.height);
+        this.ctx.font = "bold 20px arial";
+        this.ctx.lineWidth = 800;
+        this.ctx.fillStyle = "green";
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+        this.ctx.fillText(this.username, this.pos.x + 23, this.pos.y);
     }
 }
