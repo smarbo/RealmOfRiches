@@ -5,7 +5,9 @@
   "main": "./dist/src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently -k \"tsc -p ./backend -w\" \"tsc -p ./frontend -w\" \"nodemon ./dist/src/app.js\" "
+    "dev": "concurrently -k \"tsc -p ./backend -w\" \"tsc -p ./frontend -w\" \"nodemon ./dist/src/app.js\"",
+    "build": "tsc -p ./backend && tsc -p ./frontend",
+    "start": "node ./dist/src/app.js"
   },
   "author": "smarbo",
   "license": "ISC",
