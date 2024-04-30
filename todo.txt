@@ -1,4 +1,5 @@
-Features To Do:
+in the middle of renewing the player update handling System
+need to add new events handled in server side
+- playerjoin and playerleave
 
-# Inventory System
-# Combat Syste- Swords, Slingshots, Bows
+also please redo the styling for the website when you can?!!!!

@@ -31,6 +31,25 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
+  socket.on("playerJoin", (player) => {
+    socket.broadcast
+      .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
+      .emit("playerJoin", player);
+    // Send the new player all the players in that room before him
+    const roomData = io.sockets.adapter.rooms.get(
+      Array.from(socket.rooms).filter((r) => r != socket.id)[0]
+    );
+    // filter room array to not include the player, only others.
+    if (roomData) {
+      socket.emit(
+        "roomPlayers",
+        Array.from(roomData).filter((id) => id !== socket.id)
+      );
+    }
+
+    // SEND THE PLAYER ALL PLAYER IDS OF THAT ROOM, AND HE WILL AUTOMATICALLY ACCEPT PLAYERUPDATES
+  });
+
   socket.on("joinWorld", (world) => {
     socket.join(world);
     console.log(Array.from(socket.rooms).filter((r) => r != socket.id)[0]);
@@ -39,8 +58,10 @@ io.on("connection", (socket: Socket) => {
   socket.on("message", (msg) => {
     console.log(`[SOCKET.${socket.id}]: ${msg}`);
   });
-
   socket.on("disconnect", () => {
+    socket.broadcast
+      .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
+      .emit("playerLeave", socket.id);
     console.log(`[SOCKET.${socket.id}]: Disconnected`);
   });
 });

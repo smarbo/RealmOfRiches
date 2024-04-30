@@ -31,6 +31,7 @@ export class Player extends GameObject {
   mouseOffset: Vector = { x: 0, y: 0 };
   health = 100;
   energy = 100;
+  id = "";
   constructor(
     ctx: CanvasRenderingContext2D,
     pos: Vector,
@@ -177,7 +178,7 @@ export class Player extends GameObject {
   animate() {
     if (this.moving) {
       this.frames.tick += 1;
-      if (this.frames.tick === 20) {
+      if (this.frames.tick === 10) {
         this.frames.val += 1;
         this.frames.tick = 0;
       }

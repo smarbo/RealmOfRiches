@@ -48,7 +48,11 @@ collisionsMap.forEach((row, i) => {
 
 let player: Player;
 
-let players: OtherPlayer[] = [];
+let players: {
+  [key: string]: OtherPlayer;
+} = {};
+
+let playersList: string[] = [];
 
 socket.on("playerUpdate", (plr: Player) => {
   let img = "";
@@ -65,11 +69,72 @@ socket.on("playerUpdate", (plr: Player) => {
     case "d":
       img = "assets/playerRight.png";
       break;
+  } // if player is already connected
+  if (playersList.includes(plr.id)) {
+    players[plr.id].pos = plr.pos;
+    players[plr.id].img.src = img;
+    players[plr.id].frames = plr.frames;
+    players[plr.id].username = plr.username;
   }
-  players.push(new OtherPlayer(ctx, plr.pos, img, plr.frames, plr.username));
 });
 
-function gameLoop() {
+socket.on("roomPlayers", (ids: string[]) => {
+  playersList = ids;
+  playersList.forEach((id) => {
+    players[id] = new OtherPlayer(
+      ctx,
+      player.pos,
+      "assets/playerDown.png",
+      player.frames,
+      player.username
+    );
+  });
+});
+
+socket.on("playerJoin", (plr: Player) => {
+  let img = "";
+  switch (plr.lastKey) {
+    case "w":
+      img = "assets/playerUp.png";
+      break;
+    case "s":
+      img = "assets/playerDown.png";
+      break;
+    case "a":
+      img = "assets/playerLeft.png";
+      break;
+    case "d":
+      img = "assets/playerRight.png";
+      break;
+  }
+  players[plr.id] = new OtherPlayer(
+    ctx,
+    plr.pos,
+    img,
+    plr.frames,
+    plr.username
+  );
+  playersList.push(plr.id);
+});
+
+socket.on("playerLeave", (plrId: string) => {
+  playersList = playersList.filter((p) => p !== plrId);
+  delete players[plrId];
+});
+
+let lastTime = 0;
+const frameDuration = 1000 / 60; // 60 fps
+
+function gameLoop(timestamp: number) {
+  const deltaTime = timestamp - lastTime;
+  if (deltaTime < frameDuration) {
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+  lastTime = timestamp;
+
+  console.log(players);
+  console.log(playersList);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.translate(
@@ -78,12 +143,14 @@ function gameLoop() {
   );
   map.draw();
 
-  players.forEach((plr) => {
-    plr.animate();
-    plr.draw();
-  });
+  if (playersList.length >= 1) {
+    playersList.forEach((plrId) => {
+      players[plrId].animate();
+      players[plrId].draw();
+    });
+  }
 
-  peopleCounter.innerText = String(players.length + 1);
+  peopleCounter.innerText = String(playersList.length + 1);
 
   player.update();
   player.animate();
@@ -113,8 +180,6 @@ function gameLoop() {
         player.pos.x -= 3;
       }
     }
-
-    players = [];
   });
 
   ctx.restore();
@@ -128,7 +193,7 @@ roomButton.onclick = () => {
       ctx,
       { x: 2135, y: 1720 },
       "assets/playerDown.png",
-      1.5,
+      4,
       {
         max: 4,
         val: 0,
@@ -142,12 +207,16 @@ roomButton.onclick = () => {
       },
       userInput.value
     );
+    player.id = socket.id;
     worldContainer.hidden = true;
     room = roomInput.value;
     canvas.style.display = "block";
     peopleCounter.hidden = false;
     socket.emit("message", "Player joined.");
     socket.emit("joinWorld", room);
-    gameLoop();
+
+    socket.emit("playerJoin", player);
+
+    requestAnimationFrame(gameLoop);
   }
 };
