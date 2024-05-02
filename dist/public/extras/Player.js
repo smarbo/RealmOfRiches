@@ -16,8 +16,11 @@ export class Player extends GameObject {
     static height = 68;
     mouse = { x: 0, y: 0 };
     mouseOffset = { x: 0, y: 0 };
+    mouseAngle = 0;
     health = 100;
     energy = 100;
+    weaponPosition = { x: 0, y: 0 };
+    attacking = false;
     id = "";
     constructor(ctx, pos, img, speed, frames = {
         max: 4,
@@ -115,13 +118,23 @@ export class Player extends GameObject {
             }
         });
         this.ctx.canvas.addEventListener("mousemove", (e) => {
+            // Mouse offset
             const rect = this.ctx.canvas.getBoundingClientRect();
             this.mouseOffset.x = e.clientX - rect.left - this.ctx.canvas.width / 2;
             this.mouseOffset.y = e.clientY - rect.top - this.ctx.canvas.height / 2;
+            // Mouse angle
+            const dx = this.mouse.x - this.pos.x;
+            const dy = this.mouse.y - this.pos.y - this.height / 4;
+            const angle = Math.atan2(dy, dx);
+            this.mouseAngle = angle;
+        });
+        this.ctx.canvas.addEventListener("click", () => {
+            this.attack();
         });
         this.width = Player.width;
         this.height = Player.height;
     }
+    // update player (movement,health,energy) - called every frame
     update() {
         this.mouse.x = this.pos.x + this.mouseOffset.x;
         this.mouse.y = this.pos.y + this.mouseOffset.y;
@@ -157,6 +170,7 @@ export class Player extends GameObject {
             this.health = 0;
         }
     }
+    // animate player - called every frame
     animate() {
         if (this.moving) {
             this.frames.tick += 1;
@@ -172,9 +186,11 @@ export class Player extends GameObject {
             this.frames.val = 0;
         }
     }
+    // draw player - called every frame
     draw() {
         this.ctx.drawImage(this.img, this.width * this.frames.val, 0, this.img.width / this.frames.max, this.img.height, this.pos.x, this.pos.y, this.img.width / this.frames.max, this.img.height);
     }
+    // draw details about player - called every frame
     stats() {
         // health
         this.ctx.fillStyle = "rgba(0,0,0,0.3)";
@@ -200,7 +216,16 @@ export class Player extends GameObject {
         this.ctx.fillText("| 100", this.pos.x + (this.energy < 100 ? 59 : 64), this.pos.y + this.ctx.canvas.height / 2 - 30);
         this.ctx.drawImage(cursor, this.mouse.x, this.mouse.y + 12, 48, 48);
     }
+    // draw inventory - called every frame
     inv() {
         this.inventory.draw(this);
+    }
+    // handle attacks - called on mouse click
+    attack() {
+        this.weaponPosition = {
+            x: 100 * Math.cos(this.mouseAngle),
+            y: 100 * Math.sin(this.mouseAngle),
+        };
+        this.attacking = true;
     }
 }

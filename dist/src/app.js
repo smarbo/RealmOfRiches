@@ -70,10 +70,12 @@ io.on("connection", (socket) => {
     socket.on("message", (msg) => {
         console.log(`[SOCKET.${socket.id}]: ${msg}`);
     });
-    socket.on("disconnect", () => {
+    socket.on("disconnecting", () => {
         socket.broadcast
             .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
             .emit("playerLeave", socket.id);
+    });
+    socket.on("disconnect", () => {
         console.log(`[SOCKET.${socket.id}]: Disconnected`);
     });
 });

@@ -8,11 +8,11 @@ export class Item {
     ctx;
     name;
     type;
-    tile;
+    obj;
     constructor(ctx, name, type, imgPath) {
         this.ctx = ctx;
         this.name = name;
         this.type = type;
-        this.tile = new GameObject(this.ctx, { x: 0, y: 0 }, imgPath);
+        this.obj = new GameObject(this.ctx, { x: 0, y: 0 }, imgPath);
     }
 }

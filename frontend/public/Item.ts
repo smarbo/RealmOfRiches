@@ -6,13 +6,13 @@ export enum ItemTypes {
 }
 
 export class Item {
-  tile: GameObject;
+  obj: GameObject;
   constructor(
     public ctx: CanvasRenderingContext2D,
     public name: string,
     public type: ItemTypes,
     imgPath: string
   ) {
-    this.tile = new GameObject(this.ctx, { x: 0, y: 0 }, imgPath);
+    this.obj = new GameObject(this.ctx, { x: 0, y: 0 }, imgPath);
   }
 }

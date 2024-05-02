@@ -96,8 +96,6 @@ function gameLoop(timestamp) {
         return;
     }
     lastTime = timestamp;
-    console.log(players);
-    console.log(playersList);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(canvas.width / 2 - player.pos.x - player.img.width / 8, canvas.height / 2 - player.pos.y - player.img.height / 2);
@@ -123,16 +121,16 @@ function gameLoop(timestamp) {
             player.pos.y + player.height >= b.pos.y &&
             player.pos.y <= b.pos.y + b.height) {
             if (player.lastKey === "w") {
-                player.pos.y += 3;
+                player.pos.y += player.speed;
             }
             if (player.lastKey === "a") {
-                player.pos.x += 3;
+                player.pos.x += player.speed;
             }
             if (player.lastKey === "s") {
-                player.pos.y -= 3;
+                player.pos.y -= player.speed;
             }
             if (player.lastKey === "d") {
-                player.pos.x -= 3;
+                player.pos.x -= player.speed;
             }
         }
     });

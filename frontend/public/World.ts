@@ -133,8 +133,6 @@ function gameLoop(timestamp: number) {
   }
   lastTime = timestamp;
 
-  console.log(players);
-  console.log(playersList);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.translate(
@@ -168,16 +166,16 @@ function gameLoop(timestamp: number) {
       player.pos.y <= b.pos.y + b.height
     ) {
       if (player.lastKey === "w") {
-        player.pos.y += 3;
+        player.pos.y += player.speed;
       }
       if (player.lastKey === "a") {
-        player.pos.x += 3;
+        player.pos.x += player.speed;
       }
       if (player.lastKey === "s") {
-        player.pos.y -= 3;
+        player.pos.y -= player.speed;
       }
       if (player.lastKey === "d") {
-        player.pos.x -= 3;
+        player.pos.x -= player.speed;
       }
     }
   });

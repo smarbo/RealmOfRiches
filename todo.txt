@@ -1,5 +1,4 @@
-in the middle of renewing the player update handling System
-need to add new events handled in server side
-- playerjoin and playerleave
+change the draw method to use the sword object
+make a max distance from center for the sword follow, like a circular bound.
 
 also please redo the styling for the website when you can?!!!!

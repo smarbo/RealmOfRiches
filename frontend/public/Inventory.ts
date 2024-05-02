@@ -8,8 +8,8 @@ export class InvSlot {
   draw(tile: GameObject) {
     tile.draw();
     if (this.item) {
-      this.item.tile.pos = tile.pos;
-      this.item.tile.draw(48, 48);
+      this.item.obj.pos = tile.pos;
+      this.item.obj.draw(48, 48);
     }
   }
 }
@@ -20,6 +20,7 @@ export class Inventory {
   storage: InvSlot[][] = [[]];
   tileRegular: GameObject;
   tileSelected: GameObject;
+  mouseAngle: number = 0;
   constructor(public ctx: CanvasRenderingContext2D) {
     this.tileRegular = new GameObject(
       this.ctx,
@@ -49,8 +50,8 @@ export class Inventory {
 
     this.quickAccess[0].item = new Item(
       this.ctx,
-      "food",
-      ItemTypes.Interactable,
+      "Glow Sword",
+      ItemTypes.Weapon,
       "assets/blessedSword.png"
     );
   }
@@ -58,24 +59,20 @@ export class Inventory {
     const selectedSlot = this.quickAccess[this.selected];
     if (selectedSlot.item) {
       if (selectedSlot.item.type === ItemTypes.Weapon) {
-        const dx = player.mouse.x - player.pos.x;
-        const dy = player.mouse.y - player.pos.y - player.height / 4;
-        const angle = Math.atan2(dy, dx) + 0.785398;
-
         this.ctx.save();
         this.ctx.translate(
-          player.pos.x + player.width / 2,
-          player.pos.y + player.height / 2
+          player.mouse.x + player.width / 2,
+          player.mouse.y + player.height / 2
         );
-        this.ctx.translate(0, 16); // Move the rotation center to the center of the image
-        this.ctx.rotate(angle);
-        this.ctx.drawImage(selectedSlot.item.tile.img, -27, -72, 96, 96); // Adjust the position to center the image
-        this.ctx.fillStyle = "rgba(255,255,255,0.5)";
 
+        this.ctx.rotate(player.mouseAngle + 0.785398);
+
+        this.ctx.drawImage(selectedSlot.item.obj.img, -27, -72, 96, 96);
+        this.ctx.fillStyle = "rgba(255,255,255,0.5)";
         this.ctx.restore();
       } else {
         this.ctx.drawImage(
-          selectedSlot.item.tile.img,
+          selectedSlot.item.obj.img,
           player.pos.x,
           player.pos.y,
           96,
