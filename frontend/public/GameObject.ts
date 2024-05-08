@@ -1,3 +1,4 @@
+import { Player } from "./Player.js";
 import { Vector } from "./Vector.js";
 export class GameObject {
   img: HTMLImageElement;

@@ -1,4 +1,1 @@
-change the draw method to use the sword object
-make a max distance from center for the sword follow, like a circular bound.
-
 also please redo the styling for the website when you can?!!!!

@@ -3,6 +3,8 @@ import { collisions } from "./Collisions.js";
 import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
+import { WorldItem } from "./WorldItem.js";
+import { ItemTypes } from "./Item.js";
 // @ts-ignore
 
 const socket: Socket = io();
@@ -75,6 +77,7 @@ socket.on("playerUpdate", (plr: Player) => {
     players[plr.id].img.src = img;
     players[plr.id].frames = plr.frames;
     players[plr.id].username = plr.username;
+    players[plr.id].lastKey = plr.lastKey;
   }
 });
 
@@ -125,6 +128,8 @@ socket.on("playerLeave", (plrId: string) => {
 let lastTime = 0;
 const frameDuration = 1000 / 60; // 60 fps
 
+let grabbables: WorldItem[] = [];
+
 function gameLoop(timestamp: number) {
   const deltaTime = timestamp - lastTime;
   if (deltaTime < frameDuration) {
@@ -153,7 +158,15 @@ function gameLoop(timestamp: number) {
   player.update();
   player.animate();
   socket.emit("playerUpdate", { ...player });
+  grabbables.forEach((g, i) => {
+    g.draw(64, 64);
+    if (player.grabbing) {
+      const grabbed = g.collect(player);
+      if (grabbed) delete grabbables[i];
+    }
+  });
   player.draw();
+
   foreground.draw();
   player.inv();
   player.stats();
@@ -163,7 +176,7 @@ function gameLoop(timestamp: number) {
       player.pos.x + player.width >= b.pos.x &&
       player.pos.x <= b.pos.x + b.width &&
       player.pos.y + player.height >= b.pos.y &&
-      player.pos.y <= b.pos.y + b.height
+      player.pos.y + player.height / 2 <= b.pos.y + b.height
     ) {
       if (player.lastKey === "w") {
         player.pos.y += player.speed;
@@ -204,6 +217,16 @@ roomButton.onclick = () => {
         },
       },
       userInput.value
+    );
+
+    grabbables.push(
+      new WorldItem(
+        ctx,
+        { ...player.pos },
+        "assets/rustySword.png",
+        "Rusty Sword",
+        ItemTypes.Sword
+      )
     );
     player.id = socket.id;
     worldContainer.hidden = true;

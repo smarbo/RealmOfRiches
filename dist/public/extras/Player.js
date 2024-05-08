@@ -6,7 +6,6 @@ export class Player extends GameObject {
     speed;
     frames;
     username;
-    inventory;
     inputs;
     lastKey;
     width;
@@ -20,8 +19,10 @@ export class Player extends GameObject {
     health = 100;
     energy = 100;
     weaponPosition = { x: 0, y: 0 };
-    attacking = false;
     id = "";
+    inventory;
+    grabbing = false;
+    hat;
     constructor(ctx, pos, img, speed, frames = {
         max: 4,
         val: 0,
@@ -32,12 +33,12 @@ export class Player extends GameObject {
             right: new Image(),
             down: new Image(),
         },
-    }, username, inventory = new Inventory(ctx)) {
+    }, username) {
         super(ctx, pos, img);
         this.speed = speed;
         this.frames = frames;
         this.username = username;
-        this.inventory = inventory;
+        this.inventory = new Inventory(ctx, this);
         this.inputs = {
             up: false,
             down: false,
@@ -128,9 +129,11 @@ export class Player extends GameObject {
             const angle = Math.atan2(dy, dx);
             this.mouseAngle = angle;
         });
-        this.ctx.canvas.addEventListener("click", () => {
-            this.attack();
-        });
+        this.hat = {
+            front: new GameObject(ctx, this.pos, "assets/hatFront.png"),
+            side: new GameObject(ctx, this.pos, "assets/hatSide.png"),
+            back: new GameObject(ctx, this.pos, "assets/hatBack.png"),
+        };
         this.width = Player.width;
         this.height = Player.height;
     }
@@ -155,10 +158,10 @@ export class Player extends GameObject {
             this.img = this.frames.imgs.right;
         }
         if (this.inputs.interact) {
-            this.health -= 1;
+            this.grabbing = true;
         }
         if (this.energy < 100) {
-            this.energy += 0.02;
+            this.energy += 0.004;
         }
         if (this.energy < 0) {
             this.energy = 0;
@@ -169,6 +172,18 @@ export class Player extends GameObject {
         if (this.health < 0) {
             this.health = 0;
         }
+        this.hat.front.pos = {
+            x: this.pos.x - this.width / 5,
+            y: this.pos.y - this.height / 2,
+        };
+        this.hat.back.pos = {
+            x: this.pos.x - this.width / 5,
+            y: this.pos.y - this.height / 2,
+        };
+        this.hat.side.pos = {
+            x: this.pos.x - this.width / 5,
+            y: this.pos.y - this.height / 2,
+        };
     }
     // animate player - called every frame
     animate() {
@@ -189,6 +204,19 @@ export class Player extends GameObject {
     // draw player - called every frame
     draw() {
         this.ctx.drawImage(this.img, this.width * this.frames.val, 0, this.img.width / this.frames.max, this.img.height, this.pos.x, this.pos.y, this.img.width / this.frames.max, this.img.height);
+        switch (this.lastKey) {
+            case "w":
+                this.hat.back.draw(64, 64);
+                break;
+            case "a":
+                this.hat.side.draw(64, 64);
+                break;
+            case "d":
+                this.hat.side.draw(64, 64);
+                break;
+            case "s":
+                this.hat.front.draw(64, 64);
+        }
     }
     // draw details about player - called every frame
     stats() {
@@ -206,7 +234,7 @@ export class Player extends GameObject {
         // energy
         this.ctx.fillStyle = "rgba(0,0,0,0.3)";
         this.ctx.fillRect(this.pos.x + 24 + 5, this.pos.y + this.ctx.canvas.height / 2 - 45, 170, 20);
-        this.ctx.fillStyle = "#f0c724";
+        this.ctx.fillStyle = "#673ab7";
         this.ctx.fillRect(this.pos.x + 24 + 5, this.pos.y + this.ctx.canvas.height / 2 - 45, (170 * this.energy) / 100, 20);
         this.ctx.fillStyle = "white";
         this.ctx.font = "bold 13px Arial";
@@ -219,13 +247,5 @@ export class Player extends GameObject {
     // draw inventory - called every frame
     inv() {
         this.inventory.draw(this);
-    }
-    // handle attacks - called on mouse click
-    attack() {
-        this.weaponPosition = {
-            x: 100 * Math.cos(this.mouseAngle),
-            y: 100 * Math.sin(this.mouseAngle),
-        };
-        this.attacking = true;
     }
 }

@@ -8,6 +8,7 @@ export class OtherPlayer extends GameObject {
     moving = false;
     static width = 48;
     static height = 68;
+    hat;
     constructor(ctx, pos, img, frames = {
         max: 4,
         val: 0,
@@ -29,20 +30,25 @@ export class OtherPlayer extends GameObject {
         this.frames.imgs.right.src = "assets/playerRight.png";
         this.width = OtherPlayer.width;
         this.height = OtherPlayer.height;
+        this.hat = {
+            front: new GameObject(ctx, this.pos, "assets/hatFront.png"),
+            side: new GameObject(ctx, this.pos, "assets/hatSide.png"),
+            back: new GameObject(ctx, this.pos, "assets/hatBack.png"),
+        };
     }
     animate() {
-        if (this.lastKey === "w") {
-            this.img = this.frames.imgs.up;
-        }
-        if (this.lastKey === "s") {
-            this.img = this.frames.imgs.down;
-        }
-        if (this.lastKey === "a") {
-            this.img = this.frames.imgs.left;
-        }
-        if (this.lastKey === "d") {
-            this.img = this.frames.imgs.right;
-        }
+        this.hat.front.pos = {
+            x: this.pos.x - this.width / 5,
+            y: this.pos.y - this.height / 2,
+        };
+        this.hat.back.pos = {
+            x: this.pos.x - this.width / 5,
+            y: this.pos.y - this.height / 2,
+        };
+        this.hat.side.pos = {
+            x: this.pos.x - this.width / 5,
+            y: this.pos.y - this.height / 2,
+        };
     }
     draw() {
         this.ctx.drawImage(this.img, this.width * this.frames.val, 0, this.img.width / this.frames.max, this.img.height, this.pos.x, this.pos.y, this.img.width / this.frames.max, this.img.height);
@@ -51,6 +57,23 @@ export class OtherPlayer extends GameObject {
         this.ctx.fillStyle = "green";
         this.ctx.textAlign = "center";
         this.ctx.textBaseline = "middle";
+        this.drawHat();
         this.ctx.fillText(this.username, this.pos.x + 23, this.pos.y);
+    }
+    drawHat() {
+        switch (this.lastKey) {
+            case "w":
+                this.hat.back.draw(64, 64);
+                break;
+            case "a":
+                this.hat.side.draw(64, 64);
+                break;
+            case "d":
+                this.hat.side.draw(64, 64);
+                break;
+            case "s":
+                this.hat.front.draw(64, 64);
+                break;
+        }
     }
 }
