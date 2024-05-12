@@ -12,8 +12,10 @@ export class InvSlot {
     draw(tile) {
         tile.draw();
         if (this.item) {
+            let temp = this.item.obj.pos;
             this.item.obj.pos = tile.pos;
             this.item.obj.draw(48, 48);
+            this.item.obj.pos = temp;
         }
     }
 }

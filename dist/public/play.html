@@ -9,28 +9,27 @@
   <body>
     <canvas id="canvas" width="800" height="450"></canvas>
     <h1 id="people" style="color: white">Players Connected:</h1>
-
     <div id="worldContainer">
       <h2>Join a world to play Realm of Riches</h2>
-      <div id="form">
-        <input
-          type="text"
-          id="roomInput"
-          placeholder="World Code"
-          autocomplete="off"
-          autocapitalize="off"
-        />
-        <input
-          type="text"
-          id="userInput"
-          placeholder="Username"
-          autocomplete="off"
-          autocapitalize="off"
-        />
-        <button id="roomButton">Join</button>
-      </div>
+      <input
+        type="text"
+        id="roomInput"
+        placeholder="World Code"
+        autocomplete="off"
+        autocapitalize="off"
+      />
+      <input
+        type="text"
+        id="userInput"
+        placeholder="Username"
+        autocomplete="off"
+        autocapitalize="off"
+      />
+      <button id="roomButton" class="launchBtn">Join</button>
     </div>
-    <h2>This game is made and owned by eddie obrams</h2>
+    <footer>
+      <h2><a href="https://github.com/smarbo">Eddie Obrams</a> 2024</h2>
+    </footer>
 
     <script src="assets/data/collisions.js"></script>
     <script src="socket.io/socket.io.js"></script>

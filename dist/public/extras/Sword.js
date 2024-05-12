@@ -4,6 +4,7 @@ export class Sword extends GameObject {
     frames;
     attacking;
     rot = 0;
+    hitting = false;
     constructor(ctx, pos, img, reach, frames = {
         max: 8,
         val: 0,

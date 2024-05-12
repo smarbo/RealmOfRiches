@@ -6,7 +6,7 @@ import { Inventory } from "./Inventory.js";
 const cursor = new Image();
 cursor.src = "assets/cursor.png";
 
-type Frames = {
+export type EntityFrames = {
   max: number;
   val: number;
   tick: number;
@@ -47,7 +47,7 @@ export class Player extends GameObject {
     pos: Vector,
     img: string,
     public speed: number,
-    public frames: Frames = {
+    public frames: EntityFrames = {
       max: 4,
       val: 0,
       tick: 0,
@@ -181,6 +181,8 @@ export class Player extends GameObject {
     }
     if (this.inputs.interact) {
       this.grabbing = true;
+    } else {
+      this.grabbing = false;
     }
 
     if (this.energy < 100) {

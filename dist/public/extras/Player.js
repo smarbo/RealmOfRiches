@@ -160,6 +160,9 @@ export class Player extends GameObject {
         if (this.inputs.interact) {
             this.grabbing = true;
         }
+        else {
+            this.grabbing = false;
+        }
         if (this.energy < 100) {
             this.energy += 0.004;
         }

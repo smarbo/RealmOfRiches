@@ -5,6 +5,9 @@ import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
 import { WorldItem } from "./WorldItem.js";
 import { ItemTypes } from "./Item.js";
+import { Sword } from "./Sword.js";
+import { Direction, Skeleton } from "./Skeleton.js";
+import { Vector } from "./Vector.js";
 // @ts-ignore
 
 const socket: Socket = io();
@@ -12,8 +15,8 @@ let room = "";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 canvas.style.display = "none";
-canvas.width = 1440;
-canvas.height = 810;
+canvas.width = document.documentElement.clientWidth;
+canvas.height = document.documentElement.clientHeight;
 
 const peopleCounter = document.getElementById("people") as HTMLHeadingElement;
 peopleCounter.hidden = true;
@@ -130,6 +133,11 @@ const frameDuration = 1000 / 60; // 60 fps
 
 let grabbables: WorldItem[] = [];
 
+let enemies: Skeleton[] = [];
+enemies.push(
+  new Skeleton(ctx, { x: 2135, y: 1720 }, "assets/skeleDown.png", 3.5)
+);
+
 function gameLoop(timestamp: number) {
   const deltaTime = timestamp - lastTime;
   if (deltaTime < frameDuration) {
@@ -165,13 +173,73 @@ function gameLoop(timestamp: number) {
       if (grabbed) delete grabbables[i];
     }
   });
+  if (enemies.length >= 1) {
+    enemies.forEach((e, i) => {
+      if (e.health < 1) {
+        delete enemies[i];
+        grabbables.push(
+          new WorldItem(
+            ctx,
+            { ...e.pos },
+            "assets/rustySword.png",
+            "Rusty Sword",
+            ItemTypes.Sword
+          )
+        );
+      }
+      e.draw();
+      e.ai(player);
+      e.update();
+      let selected = player.inventory.quickAccess[player.inventory.selected];
+      if (selected.item && selected.item.obj instanceof Sword) {
+        if (
+          selected.item.obj.collides(e, 64, 64, 96, 96) &&
+          selected.item.obj.attacking
+        ) {
+          if (!selected.item.obj.hitting) {
+            e.health -= 5;
+            selected.item.obj.hitting = true;
+          }
+        } else {
+          selected.item.obj.hitting = false;
+        }
+      }
+    });
+  }
   player.draw();
 
   foreground.draw();
   player.inv();
+
   player.stats();
   boundaries.forEach((b) => {
-    // collision detection
+    // collision detection for player
+    if (enemies.length >= 1) {
+      enemies.forEach((e) => {
+        if (
+          e.pos.x + e.width >= b.pos.x &&
+          e.pos.x <= b.pos.x + b.width &&
+          e.pos.y + e.height >= b.pos.y &&
+          e.pos.y + e.height / 2 <= b.pos.y + b.height
+        ) {
+          switch (e.direction) {
+            case Direction.Down:
+              e.pos.y -= e.speed;
+              break;
+            case Direction.Up:
+              e.pos.y += e.speed;
+              break;
+            case Direction.Left:
+              e.pos.x += e.speed;
+              break;
+            case Direction.Right:
+              e.pos.x -= e.speed;
+              break;
+          }
+        }
+      });
+    }
+
     if (
       player.pos.x + player.width >= b.pos.x &&
       player.pos.x <= b.pos.x + b.width &&

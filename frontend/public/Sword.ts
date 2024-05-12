@@ -11,6 +11,7 @@ type Frames = {
 
 export class Sword extends GameObject {
   rot: number = 0;
+  hitting: boolean = false;
   constructor(
     ctx: CanvasRenderingContext2D,
     pos: Vector,
