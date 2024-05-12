@@ -1,5 +1,5 @@
 import { GameObject } from "./GameObject.js";
-import { Item, ItemTypes } from "./Item.js";
+import { Item } from "./Item.js";
 import { Sword } from "./Sword.js";
 import { magnitude } from "./Vector.js";
 export class InvSlot {
@@ -47,17 +47,16 @@ export class Inventory {
         this.quickAccess = Array(8)
             .fill(null)
             .map(() => new InvSlot(this.ctx));
-        this.add("Sapphire Sword", ItemTypes.Sword, "assets/ironSword.png");
-        this.add("Health Potion", ItemTypes.Interactable, "assets/healthPotion.png");
-        this.add("Aura Sword", ItemTypes.Sword, "assets/blessedSword.png");
-        this.add("Iron Axe", ItemTypes.Sword, "assets/ironAxe.png");
-        this.add("Jamie's Cookie", ItemTypes.Interactable, "assets/cookie.png");
+        this.add("healthPotion");
+        this.add("blessedSword");
+        this.add("ironAxe");
+        this.add("cookie");
     }
-    add(name, type, imgPath) {
+    add(id) {
         for (let i = 0; i < this.quickAccess.length; i++) {
             let slot = this.quickAccess[i];
             if (!slot.item) {
-                slot.item = new Item(this.ctx, name, type, imgPath);
+                slot.item = new Item(this.ctx, id);
                 break;
             }
         }

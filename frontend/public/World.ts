@@ -4,7 +4,7 @@ import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
 import { WorldItem } from "./WorldItem.js";
-import { ItemTypes } from "./Item.js";
+import { ItemTypes, Items } from "./Item.js";
 import { Sword } from "./Sword.js";
 import { Direction, Skeleton } from "./Skeleton.js";
 import { Vector } from "./Vector.js";
@@ -20,6 +20,9 @@ canvas.height = document.documentElement.clientHeight;
 
 const peopleCounter = document.getElementById("people") as HTMLHeadingElement;
 peopleCounter.hidden = true;
+
+const attackAnimation = new Image();
+attackAnimation.src = "assets/attackAnimation.png";
 
 const roomButton = document.getElementById("roomButton") as HTMLButtonElement;
 const roomInput = document.getElementById("roomInput") as HTMLInputElement;
@@ -58,6 +61,18 @@ let players: {
 } = {};
 
 let playersList: string[] = [];
+let enemiesId: string[] = [];
+let enemies: {
+  [key: string]: Skeleton;
+} = {};
+
+function spawnEnemy(pos: Vector) {
+  let skele = new Skeleton(ctx, pos, "assets/skeleDown.png", 3.5);
+
+  enemiesId.push(skele.id);
+  enemies[skele.id] = skele;
+  socket.emit("enemySpawn", skele);
+}
 
 socket.on("playerUpdate", (plr: Player) => {
   let img = "";
@@ -81,7 +96,40 @@ socket.on("playerUpdate", (plr: Player) => {
     players[plr.id].frames = plr.frames;
     players[plr.id].username = plr.username;
     players[plr.id].lastKey = plr.lastKey;
+    players[plr.id].inventory = plr.inventory;
   }
+});
+// MAKE ENEMY SPAWN, ENEMY UPDATE, AND ENEMY DIE EVENTS
+socket.on("enemySpawn", (e: Skeleton) => {
+  let skele = new Skeleton(ctx, e.pos, "assets/skeleDown.png", 3.5, e.id);
+  enemiesId.push(skele.id);
+  enemies[skele.id] = skele;
+});
+
+socket.on("enemyUpdate", (e: Skeleton) => {
+  enemies[e.id].aframes.val = e.aframes.val;
+  enemies[e.id].aframes.tick = e.aframes.tick;
+  enemies[e.id].pos = { ...e.pos };
+  enemies[e.id].attacking = e.attacking;
+  enemies[e.id].direction = e.direction;
+  enemies[e.id].crumbs = e.crumbs;
+});
+
+socket.on("enemyDamage", (e: Skeleton) => {
+  enemies[e.id].health = e.health;
+});
+
+socket.on("roomEnemies", (eIds: string[]) => {
+  enemiesId = eIds;
+  enemiesId.forEach((id) => {
+    enemies[id] = new Skeleton(
+      ctx,
+      { x: 2135, y: 1720 },
+      "assets/skeleDown.png",
+      3.5,
+      id
+    );
+  });
 });
 
 socket.on("roomPlayers", (ids: string[]) => {
@@ -131,12 +179,8 @@ socket.on("playerLeave", (plrId: string) => {
 let lastTime = 0;
 const frameDuration = 1000 / 60; // 60 fps
 
-let grabbables: WorldItem[] = [];
-
-let enemies: Skeleton[] = [];
-enemies.push(
-  new Skeleton(ctx, { x: 2135, y: 1720 }, "assets/skeleDown.png", 3.5)
-);
+let worldItems: WorldItem[] = [];
+let closestPlayer: OtherPlayer | Player;
 
 function gameLoop(timestamp: number) {
   const deltaTime = timestamp - lastTime;
@@ -156,8 +200,41 @@ function gameLoop(timestamp: number) {
 
   if (playersList.length >= 1) {
     playersList.forEach((plrId) => {
-      players[plrId].animate();
-      players[plrId].draw();
+      let plr = players[plrId];
+      plr.animate();
+      plr.draw();
+      let slot = plr.inventory.quickAccess[plr.inventory.selected];
+      if (slot.item) {
+        if (slot.item.type === ItemTypes.Sword) {
+          ctx.save();
+          ctx.translate(slot.item.obj.pos.x, slot.item.obj.pos.y);
+          ctx.rotate(slot.item.obj.rot);
+          ctx.drawImage(Items[slot.item.id].image, -27, -72, 96, 96);
+          const obj = slot.item.obj as Sword;
+          if (obj.attacking) {
+            ctx.drawImage(
+              attackAnimation,
+              obj.frames.val * 32,
+              0,
+              32,
+              32,
+              -27,
+              -72,
+              96,
+              96
+            );
+          }
+          ctx.restore();
+        } else {
+          ctx.drawImage(
+            Items[slot.item.id].image,
+            plr.pos.x,
+            plr.pos.y,
+            96,
+            96
+          );
+        }
+      }
     });
   }
 
@@ -166,30 +243,51 @@ function gameLoop(timestamp: number) {
   player.update();
   player.animate();
   socket.emit("playerUpdate", { ...player });
-  grabbables.forEach((g, i) => {
+  worldItems.forEach((g, i) => {
     g.draw(64, 64);
     if (player.grabbing) {
       const grabbed = g.collect(player);
-      if (grabbed) delete grabbables[i];
+      if (grabbed) delete worldItems[i];
     }
   });
-  if (enemies.length >= 1) {
-    enemies.forEach((e, i) => {
+  if (enemiesId.length >= 1) {
+    enemiesId.forEach((eId, i) => {
+      let e = enemies[eId];
       if (e.health < 1) {
-        delete enemies[i];
-        grabbables.push(
-          new WorldItem(
-            ctx,
-            { ...e.pos },
-            "assets/rustySword.png",
-            "Rusty Sword",
-            ItemTypes.Sword
-          )
-        );
+        delete enemies[eId];
+        delete enemiesId[i];
+        socket.emit("enemyKill", e);
+        worldItems.push(new WorldItem(ctx, { ...e.pos }, "cookie"));
       }
       e.draw();
-      e.ai(player);
+
+      if (playersList.length >= 1) {
+        let minDistance = Number.MAX_VALUE;
+        playersList.forEach((plrId) => {
+          const plr = players[plrId];
+          const distance = Math.sqrt(
+            Math.pow(plr.pos.x - e.pos.x, 2) + Math.pow(plr.pos.y - e.pos.y, 2)
+          );
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPlayer = plr;
+          }
+
+          const pd = Math.sqrt(
+            Math.pow(player.pos.x - e.pos.x, 2) +
+              Math.pow(plr.pos.y - e.pos.y, 2)
+          );
+          if (pd < minDistance) {
+            minDistance = pd;
+            closestPlayer = player;
+          }
+        });
+      } else {
+        closestPlayer = player;
+      }
+      e.ai(closestPlayer);
       e.update();
+      socket.emit("enemyUpdate", e);
       let selected = player.inventory.quickAccess[player.inventory.selected];
       if (selected.item && selected.item.obj instanceof Sword) {
         if (
@@ -199,6 +297,7 @@ function gameLoop(timestamp: number) {
           if (!selected.item.obj.hitting) {
             e.health -= 5;
             selected.item.obj.hitting = true;
+            socket.emit("enemyDamage", e);
           }
         } else {
           selected.item.obj.hitting = false;
@@ -214,8 +313,9 @@ function gameLoop(timestamp: number) {
   player.stats();
   boundaries.forEach((b) => {
     // collision detection for player
-    if (enemies.length >= 1) {
-      enemies.forEach((e) => {
+    if (enemiesId.length >= 1) {
+      enemiesId.forEach((eId) => {
+        let e = enemies[eId];
         if (
           e.pos.x + e.width >= b.pos.x &&
           e.pos.x <= b.pos.x + b.width &&
@@ -272,6 +372,7 @@ roomButton.onclick = () => {
       ctx,
       { x: 2135, y: 1720 },
       "assets/playerDown.png",
+      spawnEnemy,
       4,
       {
         max: 4,
@@ -287,15 +388,6 @@ roomButton.onclick = () => {
       userInput.value
     );
 
-    grabbables.push(
-      new WorldItem(
-        ctx,
-        { ...player.pos },
-        "assets/rustySword.png",
-        "Rusty Sword",
-        ItemTypes.Sword
-      )
-    );
     player.id = socket.id;
     worldContainer.hidden = true;
     room = roomInput.value;

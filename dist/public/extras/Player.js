@@ -3,6 +3,7 @@ import { Inventory } from "./Inventory.js";
 const cursor = new Image();
 cursor.src = "assets/cursor.png";
 export class Player extends GameObject {
+    spawnEnemy;
     speed;
     frames;
     username;
@@ -23,7 +24,7 @@ export class Player extends GameObject {
     inventory;
     grabbing = false;
     hat;
-    constructor(ctx, pos, img, speed, frames = {
+    constructor(ctx, pos, img, spawnEnemy, speed, frames = {
         max: 4,
         val: 0,
         tick: 0,
@@ -35,6 +36,7 @@ export class Player extends GameObject {
         },
     }, username) {
         super(ctx, pos, img);
+        this.spawnEnemy = spawnEnemy;
         this.speed = speed;
         this.frames = frames;
         this.username = username;
@@ -158,6 +160,8 @@ export class Player extends GameObject {
             this.img = this.frames.imgs.right;
         }
         if (this.inputs.interact) {
+            this.spawnEnemy({ x: 2135, y: 1720 });
+            this.inputs.interact = false;
             this.grabbing = true;
         }
         else {

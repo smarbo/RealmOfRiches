@@ -1,4 +1,5 @@
 import { GameObject } from "./GameObject.js";
+import { Inventory } from "./Inventory.js";
 import { Hat } from "./Player.js";
 import { Vector } from "./Vector.js";
 
@@ -22,6 +23,9 @@ export class OtherPlayer extends GameObject {
   static width = 48;
   static height = 68;
   hat: Hat;
+  health: number = 100;
+  energy: number = 100;
+  inventory: Inventory;
   constructor(
     ctx: CanvasRenderingContext2D,
     pos: Vector,
@@ -40,6 +44,7 @@ export class OtherPlayer extends GameObject {
     public username: string
   ) {
     super(ctx, pos, img);
+    this.inventory = new Inventory(ctx, this);
     this.lastKey = "";
     this.frames.imgs.up.src = "assets/playerUp.png";
     this.frames.imgs.down.src = "assets/playerDown.png";

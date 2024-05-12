@@ -1,4 +1,5 @@
 import { GameObject } from "./GameObject.js";
+import { Inventory } from "./Inventory.js";
 export class OtherPlayer extends GameObject {
     frames;
     username;
@@ -9,6 +10,9 @@ export class OtherPlayer extends GameObject {
     static width = 48;
     static height = 68;
     hat;
+    health = 100;
+    energy = 100;
+    inventory;
     constructor(ctx, pos, img, frames = {
         max: 4,
         val: 0,
@@ -23,6 +27,7 @@ export class OtherPlayer extends GameObject {
         super(ctx, pos, img);
         this.frames = frames;
         this.username = username;
+        this.inventory = new Inventory(ctx, this);
         this.lastKey = "";
         this.frames.imgs.up.src = "assets/playerUp.png";
         this.frames.imgs.down.src = "assets/playerDown.png";

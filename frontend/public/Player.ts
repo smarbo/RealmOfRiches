@@ -46,6 +46,7 @@ export class Player extends GameObject {
     ctx: CanvasRenderingContext2D,
     pos: Vector,
     img: string,
+    public spawnEnemy: Function,
     public speed: number,
     public frames: EntityFrames = {
       max: 4,
@@ -180,6 +181,8 @@ export class Player extends GameObject {
       this.img = this.frames.imgs.right;
     }
     if (this.inputs.interact) {
+      this.spawnEnemy({ x: 2135, y: 1720 });
+      this.inputs.interact = false;
       this.grabbing = true;
     } else {
       this.grabbing = false;

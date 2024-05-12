@@ -1,17 +1,11 @@
 import { GameObject } from "./GameObject.js";
-import { ItemTypes } from "./Item.js";
+import { ItemTypes, Items } from "./Item.js";
 import { Player } from "./Player.js";
 import { Vector, magnitude } from "./Vector.js";
 
 export class WorldItem extends GameObject {
-  constructor(
-    ctx: CanvasRenderingContext2D,
-    pos: Vector,
-    img: string,
-    public name: string,
-    public type: ItemTypes
-  ) {
-    super(ctx, pos, img);
+  constructor(ctx: CanvasRenderingContext2D, pos: Vector, public id: string) {
+    super(ctx, pos, Items[id].img);
   }
 
   collect(player: Player): boolean {
@@ -31,7 +25,7 @@ export class WorldItem extends GameObject {
           64 /* If the object is within radius of the player and the mouse */
       ) {
         grabbed = true;
-        player.inventory.add(this.name, this.type, this.img.src);
+        player.inventory.add(this.id);
         player.grabbing = false;
       } else grabbed = false;
       return grabbed;

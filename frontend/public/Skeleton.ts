@@ -1,4 +1,5 @@
 import { GameObject } from "./GameObject.js";
+import { OtherPlayer } from "./OtherPlayer.js";
 import { EntityFrames, Player } from "./Player.js";
 import { Vector, magnitude } from "./Vector.js";
 
@@ -22,6 +23,11 @@ type SheetFrames = {
   sheet: HTMLImageElement;
 };
 
+function unique(pre: string): string {
+  const randomNumber = Math.floor(Math.random() * 45000); // You can adjust the range as needed
+  return `${pre}_` + randomNumber.toString();
+}
+
 export class Skeleton extends GameObject {
   static width: number = 48;
   static height: number = 68;
@@ -41,6 +47,7 @@ export class Skeleton extends GameObject {
     pos: Vector,
     img: string,
     public speed: number,
+    public id: string = unique("skeleton"),
     public frames: EntityFrames = {
       max: 4,
       val: 0,
@@ -91,8 +98,7 @@ export class Skeleton extends GameObject {
         break;
     }
   }
-
-  ai(plr: Player) {
+  ai(plr: Player | OtherPlayer) {
     this.frames.tick += 1;
     this.crumbs.tick += 1;
     if (this.attacking) {

@@ -5,5 +5,3 @@ shop
 public/private servers
 game chat
 interiors
-
-also please redo the styling for the website when you can?!!!!

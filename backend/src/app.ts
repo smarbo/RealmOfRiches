@@ -20,6 +20,8 @@ app.use((req: Request, res: Response, next) => {
   res.sendFile(path.join(pub, "404.html"));
 });
 
+let roomsEnemies: { [key: string]: string[] } = {};
+
 io.on("connection", (socket: Socket) => {
   console.log(`[SOCKET.${socket.id}]: Connected`);
 
@@ -31,14 +33,41 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
+  socket.on("enemySpawn", (e) => {
+    let room = Array.from(socket.rooms).filter((r) => r != socket.id)[0];
+    console.log(`[ROOM.${room}]: ENEMY CREATED`);
+    socket.broadcast.to(room).emit("enemySpawn", e);
+    if (!roomsEnemies[room]) {
+      roomsEnemies[room] = [];
+    }
+    roomsEnemies[room].push(e.id);
+  });
+
+  socket.on("enemyUpdate", (e) => {
+    socket.broadcast
+      .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
+      .emit("enemyUpdate", e);
+  });
+
+  socket.on("enemyDamage", (e) => {
+    socket.broadcast
+      .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
+      .emit("enemyDamage", e);
+  });
+
+  socket.on("enemyKill", (e) => {
+    let room = Array.from(socket.rooms).filter((r) => r != socket.id)[0];
+    console.log(`[ROOM.${room}]: ENEMY KILLED`);
+    roomsEnemies[room] = roomsEnemies[room].filter((i) => i !== e.id);
+  });
+
   socket.on("playerJoin", (player) => {
     socket.broadcast
       .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
       .emit("playerJoin", player);
     // Send the new player all the players in that room before him
-    const roomData = io.sockets.adapter.rooms.get(
-      Array.from(socket.rooms).filter((r) => r != socket.id)[0]
-    );
+    const room = Array.from(socket.rooms).filter((r) => r != socket.id)[0];
+    const roomData = io.sockets.adapter.rooms.get(room);
     // filter room array to not include the player, only others.
     if (roomData) {
       socket.emit(
@@ -47,12 +76,16 @@ io.on("connection", (socket: Socket) => {
       );
     }
 
+    if (roomsEnemies[room]) {
+      socket.emit("roomEnemies", roomsEnemies[room]);
+    }
+
     // SEND THE PLAYER ALL PLAYER IDS OF THAT ROOM, AND HE WILL AUTOMATICALLY ACCEPT PLAYERUPDATES
   });
 
   socket.on("joinWorld", (world) => {
     socket.join(world);
-    console.log(Array.from(socket.rooms).filter((r) => r != socket.id)[0]);
+    console.log(`[SOCKET.${socket.id}]: Joined ${world}`);
   });
 
   socket.on("message", (msg) => {

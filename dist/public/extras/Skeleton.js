@@ -8,8 +8,13 @@ export var Direction;
     Direction[Direction["Down"] = 3] = "Down";
     Direction[Direction["None"] = 4] = "None";
 })(Direction || (Direction = {}));
+function unique(pre) {
+    const randomNumber = Math.floor(Math.random() * 45000); // You can adjust the range as needed
+    return `${pre}_` + randomNumber.toString();
+}
 export class Skeleton extends GameObject {
     speed;
+    id;
     frames;
     aframes;
     static width = 48;
@@ -25,7 +30,7 @@ export class Skeleton extends GameObject {
     health = 100;
     attacking = false;
     damage = 8;
-    constructor(ctx, pos, img, speed, frames = {
+    constructor(ctx, pos, img, speed, id = unique("skeleton"), frames = {
         max: 4,
         val: 0,
         tick: 0,
@@ -43,6 +48,7 @@ export class Skeleton extends GameObject {
     }) {
         super(ctx, pos, img);
         this.speed = speed;
+        this.id = id;
         this.frames = frames;
         this.aframes = aframes;
         this.frames.imgs.up.src = "assets/skeleUp.png";

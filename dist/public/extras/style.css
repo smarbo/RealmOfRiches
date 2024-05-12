@@ -9,10 +9,16 @@
   font-weight: 400;
 }
 
-body {
+html {
+  overflow: hidden;
+}
+
+.stuff {
   background: #333;
   display: flex;
   flex-direction: column;
+  width: 100vw;
+  height: 100vh;
 }
 
 canvas {
@@ -66,7 +72,16 @@ a {
   border: 2px solid goldenrod;
   font-size: 20px;
   font-weight: 400;
+  transition: all 0.2s ease-in-out;
 }
+
+.launchBtn:hover {
+  background: goldenrod;
+  border: 2px solid #333;
+  width: 90%;
+  color: white;
+}
+
 .welcome {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -117,4 +132,28 @@ input::placeholder {
 
 input:focus {
   outline: none;
+}
+
+.back {
+  position: absolute;
+  text-align: left;
+  left: 15px;
+  top: 5px;
+  color: white;
+}
+
+@media screen and (max-width: 512px) {
+  #worldContainer {
+    width: 80vw;
+    height: 40vh;
+    text-align: center;
+  }
+
+  .welcome {
+    width: 80vw;
+  }
+
+  img {
+    width: 100%;
+  }
 }
