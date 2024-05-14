@@ -21,6 +21,20 @@ attackAnimation.src = "assets/attackAnimation.png";
 const roomButton = document.getElementById("roomButton");
 const roomInput = document.getElementById("roomInput");
 const userInput = document.getElementById("userInput");
+const serverSelector = document.getElementById("serverSelector");
+const publicPrivate = document.getElementById("publicPrivate");
+publicPrivate.onchange = () => {
+    if (publicPrivate.checked) {
+        roomInput.disabled = false;
+        roomInput.style.opacity = "100";
+        userInput.style.transform = "translateY(0)";
+    }
+    else {
+        roomInput.disabled = true;
+        roomInput.style.opacity = "0";
+        userInput.style.transform = "translateY(-40px)";
+    }
+};
 const worldContainer = document.getElementById("worldContainer");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
@@ -278,7 +292,7 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 roomButton.onclick = () => {
-    if (roomInput.value != "" && userInput.value != "") {
+    if (userInput.value != "") {
         player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", spawnEnemy, 4, {
             max: 4,
             val: 0,
@@ -296,7 +310,12 @@ roomButton.onclick = () => {
         canvas.style.display = "block";
         peopleCounter.hidden = false;
         socket.emit("message", "Player joined.");
-        socket.emit("joinWorld", room);
+        if (publicPrivate.checked && roomInput.value != "") {
+            socket.emit("joinWorld", room);
+        }
+        else if (!publicPrivate.checked) {
+            socket.emit("joinPublic");
+        }
         socket.emit("playerJoin", player);
         requestAnimationFrame(gameLoop);
     }

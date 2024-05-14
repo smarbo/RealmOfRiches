@@ -13,12 +13,22 @@
       <h1 id="people" style="color: white">Players Connected:</h1>
       <div id="worldContainer">
         <h2>Join a world to play Realm of Riches</h2>
+        <div class="serverType" id="serverSelector">
+          <h3>Public</h3>
+          <label class="switch">
+            <input type="checkbox" id="publicPrivate" />
+            <span class="slider"></span>
+          </label>
+          <h3>Private</h3>
+        </div>
+
         <input
           type="text"
           id="roomInput"
           placeholder="World Code"
           autocomplete="off"
           autocapitalize="off"
+          disabled
         />
         <input
           type="text"

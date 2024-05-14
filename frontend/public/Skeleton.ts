@@ -130,13 +130,13 @@ export class Skeleton extends GameObject {
         this.frames.val += 1;
       } else this.frames.val = 0;
     }
+
     /*
     // for debugging
     this.crumbs.list.forEach((c) => {
       this.ctx.fillStyle = "red";
       this.ctx.fillRect(c.x, c.y, 20, 20);
-    });
-  */
+    });*/
     const pd: Vector = {
       x: plr.pos.x + plr.width / 2 - (this.pos.x + this.width / 2),
       y: plr.pos.y + plr.height / 2 - (this.pos.y + this.height / 2),

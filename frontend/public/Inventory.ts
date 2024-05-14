@@ -73,6 +73,7 @@ export class Inventory {
       }
     }
   }
+
   draw(player: Player) {
     const selectedSlot = this.quickAccess[this.selected];
     if (selectedSlot.item) {

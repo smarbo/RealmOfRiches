@@ -27,6 +27,25 @@ attackAnimation.src = "assets/attackAnimation.png";
 const roomButton = document.getElementById("roomButton") as HTMLButtonElement;
 const roomInput = document.getElementById("roomInput") as HTMLInputElement;
 const userInput = document.getElementById("userInput") as HTMLInputElement;
+const serverSelector = document.getElementById(
+  "serverSelector"
+) as HTMLDivElement;
+const publicPrivate = document.getElementById(
+  "publicPrivate"
+) as HTMLInputElement;
+
+publicPrivate.onchange = () => {
+  if (publicPrivate.checked) {
+    roomInput.disabled = false;
+    roomInput.style.opacity = "100";
+    userInput.style.transform = "translateY(0)";
+  } else {
+    roomInput.disabled = true;
+    roomInput.style.opacity = "0";
+    userInput.style.transform = "translateY(-40px)";
+  }
+};
+
 const worldContainer = document.getElementById(
   "worldContainer"
 ) as HTMLDivElement;
@@ -367,7 +386,7 @@ function gameLoop(timestamp: number) {
 }
 
 roomButton.onclick = () => {
-  if (roomInput.value != "" && userInput.value != "") {
+  if (userInput.value != "") {
     player = new Player(
       ctx,
       { x: 2135, y: 1720 },
@@ -394,7 +413,11 @@ roomButton.onclick = () => {
     canvas.style.display = "block";
     peopleCounter.hidden = false;
     socket.emit("message", "Player joined.");
-    socket.emit("joinWorld", room);
+    if (publicPrivate.checked && roomInput.value != "") {
+      socket.emit("joinWorld", room);
+    } else if (!publicPrivate.checked) {
+      socket.emit("joinPublic");
+    }
 
     socket.emit("playerJoin", player);
 

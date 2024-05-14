@@ -120,8 +120,7 @@ export class Skeleton extends GameObject {
         this.crumbs.list.forEach((c) => {
           this.ctx.fillStyle = "red";
           this.ctx.fillRect(c.x, c.y, 20, 20);
-        });
-      */
+        });*/
         const pd = {
             x: plr.pos.x + plr.width / 2 - (this.pos.x + this.width / 2),
             y: plr.pos.y + plr.height / 2 - (this.pos.y + this.height / 2),

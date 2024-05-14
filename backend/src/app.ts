@@ -21,6 +21,8 @@ app.use((req: Request, res: Response, next) => {
 });
 
 let roomsEnemies: { [key: string]: string[] } = {};
+let roomHosts: { [room: string]: string } = {};
+let publicRooms: string[] = [];
 
 io.on("connection", (socket: Socket) => {
   console.log(`[SOCKET.${socket.id}]: Connected`);
@@ -44,9 +46,11 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("enemyUpdate", (e) => {
-    socket.broadcast
-      .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
-      .emit("enemyUpdate", e);
+    let room = Array.from(socket.rooms).filter((r) => r != socket.id)[0];
+
+    if (roomHosts[room] === socket.id) {
+      socket.broadcast.to(room).emit("enemyUpdate", e);
+    }
   });
 
   socket.on("enemyDamage", (e) => {
@@ -74,6 +78,10 @@ io.on("connection", (socket: Socket) => {
         "roomPlayers",
         Array.from(roomData).filter((id) => id !== socket.id)
       );
+      if (Array.from(roomData).filter((id) => id !== socket.id).length < 1) {
+        roomHosts[room] = socket.id;
+        console.log(`${socket.id} is now the host of ${room}`);
+      }
     }
 
     if (roomsEnemies[room]) {
@@ -86,6 +94,25 @@ io.on("connection", (socket: Socket) => {
   socket.on("joinWorld", (world) => {
     socket.join(world);
     console.log(`[SOCKET.${socket.id}]: Joined ${world}`);
+  });
+
+  socket.on("joinPublic", () => {
+    const roomData = io.sockets.adapter.rooms.get(
+      publicRooms[publicRooms.length - 1]
+    );
+
+    if (
+      publicRooms.length < 1 ||
+      (roomData && Array.from(roomData).length >= 6)
+    ) {
+      publicRooms.push(`PUBLIC_${publicRooms.length + 1}`);
+    }
+
+    socket.join(publicRooms[publicRooms.length - 1]);
+    console.log(
+      `[SOCKET.${socket.id}]: Joined ${publicRooms[publicRooms.length - 1]}`
+    );
+    console.log(publicRooms);
   });
 
   socket.on("message", (msg) => {

@@ -109,7 +109,7 @@ a {
   flex-direction: column;
   border-radius: 15px;
   padding: 20px;
-  height: 250px;
+  height: 300px;
   justify-content: center;
   align-items: center;
 }
@@ -140,6 +140,81 @@ input:focus {
   left: 15px;
   top: 5px;
   color: white;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  min-width: 60px;
+  min-height: 34px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.slider {
+  border-radius: 34px;
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.slider:before {
+  border-radius: 34px;
+  position: absolute;
+  content: "";
+  min-height: 26px;
+  min-width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+input {
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: goldenrod;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px goldenrod;
+}
+
+input:checked + .slider::before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.serverType {
+  min-width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-top: 20px;
+  margin-bottom: 5px;
+  align-items: center;
+}
+
+#roomInput {
+  opacity: 0;
+}
+#userInput {
+  transform: translateY(-40px);
 }
 
 @media screen and (max-width: 512px) {
