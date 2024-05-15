@@ -92,6 +92,12 @@ export class Inventory {
             }
             else {
                 this.ctx.drawImage(selectedSlot.item.obj.img, player.pos.x, player.pos.y, 96, 96);
+                if (player.inputs.use) {
+                    if ((selectedSlot.item.id = "healthPotion")) {
+                        player.health += 15;
+                        this.quickAccess[this.selected].item = undefined;
+                    }
+                }
             }
         }
         for (let i = 0; i < 8; i++) {

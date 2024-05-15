@@ -2,6 +2,7 @@ import { GameObject } from "./GameObject.js";
 import { Inputs } from "./Inputs.js";
 import { Vector } from "./Vector.js";
 import { Inventory } from "./Inventory.js";
+import { State } from "./State.js";
 
 const cursor = new Image();
 cursor.src = "assets/cursor.png";
@@ -69,6 +70,9 @@ export class Player extends GameObject {
       left: false,
       right: false,
       interact: false,
+      pause: false,
+      mouse: false,
+      use: false,
     };
     this.lastKey = "";
     this.frames.imgs.up.src = "assets/playerUp.png";
@@ -76,12 +80,11 @@ export class Player extends GameObject {
     this.frames.imgs.left.src = "assets/playerLeft.png";
     this.frames.imgs.right.src = "assets/playerRight.png";
     window.addEventListener("keydown", (e) => {
-      e.preventDefault();
       const keyNum = parseInt(e.key);
       if (keyNum >= 1 && keyNum <= 8) {
         this.inventory.selected = keyNum - 1;
       }
-      switch (e.key) {
+      switch (e.key.toLowerCase()) {
         case "e":
           this.inputs.interact = true;
           break;
@@ -105,10 +108,16 @@ export class Player extends GameObject {
           this.lastKey = "d";
           this.moving = true;
           break;
+        case "escape":
+          this.inputs.pause = true;
+          break;
+        case "f":
+          this.inputs.use = true;
+          break;
       }
     });
     window.addEventListener("keyup", (e) => {
-      switch (e.key) {
+      switch (e.key.toLowerCase()) {
         case "e":
           this.inputs.interact = false;
           break;
@@ -128,6 +137,12 @@ export class Player extends GameObject {
           this.inputs.right = false;
           this.moving = false;
           break;
+        case "escape":
+          this.inputs.pause = false;
+          break;
+        case "f":
+          this.inputs.use = false;
+          break;
       }
     });
     window.addEventListener("wheel", (e: WheelEvent) => {
@@ -138,6 +153,12 @@ export class Player extends GameObject {
         this.inventory.selected += 1;
         if (this.inventory.selected > 7) this.inventory.selected = 0;
       }
+    });
+    window.addEventListener("mousedown", () => {
+      this.inputs.mouse = true;
+    });
+    window.addEventListener("mouseup", () => {
+      this.inputs.mouse = false;
     });
     this.ctx.canvas.addEventListener("mousemove", (e: MouseEvent) => {
       // Mouse offset
@@ -161,31 +182,33 @@ export class Player extends GameObject {
     this.height = Player.height;
   }
   // update player (movement,health,energy) - called every frame
-  update() {
+  update(state: State) {
     this.mouse.x = this.pos.x + this.mouseOffset.x;
     this.mouse.y = this.pos.y + this.mouseOffset.y;
-    if (this.inputs.up && this.lastKey === "w") {
-      this.pos.y -= this.speed;
-      this.img = this.frames.imgs.up;
-    }
-    if (this.inputs.down && this.lastKey === "s") {
-      this.pos.y += this.speed;
-      this.img = this.frames.imgs.down;
-    }
-    if (this.inputs.left && this.lastKey === "a") {
-      this.pos.x -= this.speed;
-      this.img = this.frames.imgs.left;
-    }
-    if (this.inputs.right && this.lastKey === "d") {
-      this.pos.x += this.speed;
-      this.img = this.frames.imgs.right;
-    }
-    if (this.inputs.interact) {
-      this.spawnEnemy({ x: 2135, y: 1720 });
-      this.inputs.interact = false;
-      this.grabbing = true;
-    } else {
-      this.grabbing = false;
+    if (state !== State.Paused && state !== State.Dead) {
+      if (this.inputs.up && this.lastKey === "w") {
+        this.pos.y -= this.speed;
+        this.img = this.frames.imgs.up;
+      }
+      if (this.inputs.down && this.lastKey === "s") {
+        this.pos.y += this.speed;
+        this.img = this.frames.imgs.down;
+      }
+      if (this.inputs.left && this.lastKey === "a") {
+        this.pos.x -= this.speed;
+        this.img = this.frames.imgs.left;
+      }
+      if (this.inputs.right && this.lastKey === "d") {
+        this.pos.x += this.speed;
+        this.img = this.frames.imgs.right;
+      }
+      if (this.inputs.interact) {
+        this.spawnEnemy({ x: 2135, y: 1720 });
+        this.inputs.interact = false;
+        this.grabbing = true;
+      } else {
+        this.grabbing = false;
+      }
     }
 
     if (this.energy < 100) {
@@ -230,7 +253,7 @@ export class Player extends GameObject {
     }
   }
   // draw player - called every frame
-  draw() {
+  draw(state: State) {
     this.ctx.drawImage(
       this.img,
       this.width * this.frames.val,
@@ -242,86 +265,91 @@ export class Player extends GameObject {
       this.img.width / this.frames.max,
       this.img.height
     );
-    switch (this.lastKey) {
-      case "w":
-        this.hat.back.draw(64, 64);
-        break;
-      case "a":
-        this.hat.side.draw(64, 64);
-        break;
-      case "d":
-        this.hat.side.draw(64, 64);
-        break;
-      case "s":
-        this.hat.front.draw(64, 64);
+    if (state !== State.Paused && state !== State.Dead) {
+      switch (this.lastKey) {
+        case "w":
+          this.hat.back.draw(64, 64);
+          break;
+        case "a":
+          this.hat.side.draw(64, 64);
+          break;
+        case "d":
+          this.hat.side.draw(64, 64);
+          break;
+        case "s":
+          this.hat.front.draw(64, 64);
+      }
     }
   }
   // draw details about player - called every frame
-  stats() {
-    // health
-    this.ctx.fillStyle = "rgba(0,0,0,0.3)";
-    this.ctx.fillRect(
-      this.pos.x + 24 - 175,
-      this.pos.y + this.ctx.canvas.height / 2 - 45,
-      170,
-      20
-    );
-    this.ctx.fillStyle = "limegreen";
-    this.ctx.fillRect(
-      this.pos.x + 24 - 175,
-      this.pos.y + this.ctx.canvas.height / 2 - 45,
-      (170 * this.health) / 100,
-      20
-    );
-    this.ctx.fillStyle = "white";
-    this.ctx.font = "bold 13px Arial";
-    this.ctx.fillText(
-      this.health.toFixed(0).toString(),
-      this.pos.x + 24 - 167,
-      this.pos.y + this.ctx.canvas.height / 2 - 30
-    );
-    this.ctx.fillStyle = "rgba(255,255,255,0.7)";
-    this.ctx.font = "13px Arial";
-    this.ctx.fillText(
-      "| 100",
-      this.pos.x + 24 - 145 + (this.health < 100 ? 0 : 5),
-      this.pos.y + this.ctx.canvas.height / 2 - 30
-    );
+  stats(state: State) {
+    if (state !== State.Paused && state !== State.Dead) {
+      // health
+      this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+      this.ctx.fillRect(
+        this.pos.x + 24 - 175,
+        this.pos.y + this.ctx.canvas.height / 2 - 45,
+        170,
+        20
+      );
+      this.ctx.fillStyle = "limegreen";
+      this.ctx.fillRect(
+        this.pos.x + 24 - 175,
+        this.pos.y + this.ctx.canvas.height / 2 - 45,
+        (170 * this.health) / 100,
+        20
+      );
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "bold 13px Arial";
+      this.ctx.fillText(
+        this.health.toFixed(0).toString(),
+        this.pos.x + 24 - 167,
+        this.pos.y + this.ctx.canvas.height / 2 - 30
+      );
+      this.ctx.fillStyle = "rgba(255,255,255,0.7)";
+      this.ctx.font = "13px Arial";
+      this.ctx.fillText(
+        "| 100",
+        this.pos.x + 24 - 145 + (this.health < 100 ? 0 : 5),
+        this.pos.y + this.ctx.canvas.height / 2 - 30
+      );
 
-    // energy
-    this.ctx.fillStyle = "rgba(0,0,0,0.3)";
-    this.ctx.fillRect(
-      this.pos.x + 24 + 5,
-      this.pos.y + this.ctx.canvas.height / 2 - 45,
-      170,
-      20
-    );
-    this.ctx.fillStyle = "#673ab7";
-    this.ctx.fillRect(
-      this.pos.x + 24 + 5,
-      this.pos.y + this.ctx.canvas.height / 2 - 45,
-      (170 * this.energy) / 100,
-      20
-    );
+      // energy
+      this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+      this.ctx.fillRect(
+        this.pos.x + 24 + 5,
+        this.pos.y + this.ctx.canvas.height / 2 - 45,
+        170,
+        20
+      );
+      this.ctx.fillStyle = "#673ab7";
+      this.ctx.fillRect(
+        this.pos.x + 24 + 5,
+        this.pos.y + this.ctx.canvas.height / 2 - 45,
+        (170 * this.energy) / 100,
+        20
+      );
 
-    this.ctx.fillStyle = "white";
-    this.ctx.font = "bold 13px Arial";
-    this.ctx.fillText(
-      this.energy.toFixed(0).toString(),
-      this.pos.x + 37,
-      this.pos.y + this.ctx.canvas.height / 2 - 30
-    );
-    this.ctx.fillStyle = "rgba(255,255,255,0.7)";
-    this.ctx.font = "13px Arial";
-    this.ctx.fillText(
-      "| 100",
-      this.pos.x + (this.energy < 100 ? 59 : 64),
-      this.pos.y + this.ctx.canvas.height / 2 - 30
-    );
-    this.ctx.drawImage(cursor, this.mouse.x, this.mouse.y + 12, 48, 48);
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "bold 13px Arial";
+      this.ctx.fillText(
+        this.energy.toFixed(0).toString(),
+        this.pos.x + 37,
+        this.pos.y + this.ctx.canvas.height / 2 - 30
+      );
+      this.ctx.fillStyle = "rgba(255,255,255,0.7)";
+      this.ctx.font = "13px Arial";
+      this.ctx.fillText(
+        "| 100",
+        this.pos.x + (this.energy < 100 ? 59 : 64),
+        this.pos.y + this.ctx.canvas.height / 2 - 30
+      );
+    }
   }
   // draw inventory - called every frame
-  inv() {
-    this.inventory.draw(this);
+  inv(state: State) {
+    if (state !== State.Paused && state !== State.Dead) {
+      this.inventory.draw(this);
+    }
   }
 }

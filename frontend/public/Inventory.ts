@@ -112,6 +112,13 @@ export class Inventory {
           96,
           96
         );
+
+        if (player.inputs.use) {
+          if ((selectedSlot.item.id = "healthPotion")) {
+            player.health += 15;
+            this.quickAccess[this.selected].item = undefined;
+          }
+        }
       }
     }
 

@@ -7,15 +7,18 @@ import { WorldItem } from "./WorldItem.js";
 import { ItemTypes, Items } from "./Item.js";
 import { Sword } from "./Sword.js";
 import { Direction, Skeleton } from "./Skeleton.js";
+import { State } from "./State.js";
+import { Button } from "./Button.js";
 // @ts-ignore
 const socket = io();
 let room = "";
+let state = State.Idle;
 const canvas = document.getElementById("canvas");
 canvas.style.display = "none";
 canvas.width = document.documentElement.clientWidth;
 canvas.height = document.documentElement.clientHeight;
-const peopleCounter = document.getElementById("people");
-peopleCounter.hidden = true;
+const cursorImg = new Image();
+cursorImg.src = "assets/cursor.png";
 const attackAnimation = new Image();
 attackAnimation.src = "assets/attackAnimation.png";
 const roomButton = document.getElementById("roomButton");
@@ -38,8 +41,13 @@ publicPrivate.onchange = () => {
 const worldContainer = document.getElementById("worldContainer");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
+let mouse = { x: 0, y: 0 };
 const map = new GameObject(ctx, { x: 0, y: 0 }, "assets/rormap.png");
 const foreground = new GameObject(ctx, { x: 0, y: 0 }, "assets/foreground.png");
+const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/pauseTitle.png");
+const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/slainTitle.png");
+const backBtn = new Button(ctx, { x: 0, y: 0 }, "assets/backButton.png", "assets/backButtonHover.png", 3);
+const settingsBtn = new Button(ctx, { x: 0, y: 0 }, "assets/settingsButton.png", "assets/settingsButtonHover.png", 3);
 const collisionsMap = [];
 for (let i = 0; i < collisions.length; i += 140) {
     collisionsMap.push(collisions.slice(i, i + 140));
@@ -63,6 +71,7 @@ function spawnEnemy(pos) {
     enemies[skele.id] = skele;
     socket.emit("enemySpawn", skele);
 }
+//* SOCKET CONNECTIONS & UPDATES
 socket.on("playerUpdate", (plr) => {
     let img = "";
     switch (plr.lastKey) {
@@ -144,13 +153,23 @@ let lastTime = 0;
 const frameDuration = 1000 / 60; // 60 fps
 let worldItems = [];
 let closestPlayer;
-function gameLoop(timestamp) {
-    const deltaTime = timestamp - lastTime;
-    if (deltaTime < frameDuration) {
-        requestAnimationFrame(gameLoop);
-        return;
+const cursor = () => {
+    if (state === State.Running) {
+        mouse = {
+            x: player.mouse.x,
+            y: player.mouse.y + 12,
+        };
+        ctx.drawImage(cursorImg, mouse.x, mouse.y, 48, 48);
     }
-    lastTime = timestamp;
+    else if (state === State.Paused || state === State.Dead) {
+        mouse = {
+            x: player.mouseOffset.x + canvas.width / 2 - 24,
+            y: player.mouseOffset.y + canvas.height / 2 - 24,
+        };
+        ctx.drawImage(cursorImg, mouse.x, mouse.y, 48, 48);
+    }
+};
+const gameLoop = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(canvas.width / 2 - player.pos.x - player.img.width / 8, canvas.height / 2 - player.pos.y - player.img.height / 2);
@@ -179,8 +198,14 @@ function gameLoop(timestamp) {
             }
         });
     }
-    peopleCounter.innerText = String(playersList.length + 1);
-    player.update();
+    player.update(state);
+    if (player.inputs.pause) {
+        player.inputs.pause = false;
+        if (state === State.Running)
+            state = State.Paused;
+        else if (state === State.Paused)
+            state = State.Running;
+    }
     player.animate();
     socket.emit("playerUpdate", { ...player });
     worldItems.forEach((g, i) => {
@@ -240,10 +265,10 @@ function gameLoop(timestamp) {
             }
         });
     }
-    player.draw();
+    player.draw(state);
     foreground.draw();
-    player.inv();
-    player.stats();
+    player.inv(state);
+    player.stats(state);
     boundaries.forEach((b) => {
         // collision detection for player
         if (enemiesId.length >= 1) {
@@ -288,9 +313,57 @@ function gameLoop(timestamp) {
             }
         }
     });
+    cursor();
     ctx.restore();
-    requestAnimationFrame(gameLoop);
+};
+const pauseMenu = () => {
+    gameLoop();
+    ctx.fillStyle = "rgba(84,84,59,0.8)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    pauseTitle.pos = {
+        x: canvas.width / 2 - pauseTitle.img.width / 4,
+        y: canvas.height / 2 - pauseTitle.img.height / 4 - 200,
+    };
+    pauseTitle.draw(pauseTitle.img.width / 2, pauseTitle.img.height / 2);
+    if (backBtn.hover(mouse))
+        backBtn.drawHover();
+    else
+        backBtn.draw();
+    if (settingsBtn.hover(mouse))
+        settingsBtn.drawHover();
+    else
+        settingsBtn.draw();
+    if (backBtn.hover(mouse) && player.inputs.mouse) {
+        state = State.Running;
+    }
+    cursor();
+};
+const deathScreen = () => {
+    gameLoop();
+    slainTitle.draw();
+};
+//* Main game loop
+function handleState(timestamp) {
+    const deltaTime = timestamp - lastTime;
+    if (deltaTime < frameDuration) {
+        requestAnimationFrame(handleState);
+        return;
+    }
+    lastTime = timestamp;
+    switch (state) {
+        case State.Running:
+            gameLoop();
+            break;
+        case State.Paused:
+            pauseMenu();
+            break;
+        case State.Dead:
+            deathScreen();
+            break;
+    }
+    requestAnimationFrame(handleState);
 }
+//* Join lobby button - start game
 roomButton.onclick = () => {
     if (userInput.value != "") {
         player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", spawnEnemy, 4, {
@@ -306,9 +379,9 @@ roomButton.onclick = () => {
         }, userInput.value);
         player.id = socket.id;
         worldContainer.hidden = true;
+        worldContainer.style.display = "none";
         room = roomInput.value;
         canvas.style.display = "block";
-        peopleCounter.hidden = false;
         socket.emit("message", "Player joined.");
         if (publicPrivate.checked && roomInput.value != "") {
             socket.emit("joinWorld", room);
@@ -316,7 +389,12 @@ roomButton.onclick = () => {
         else if (!publicPrivate.checked) {
             socket.emit("joinPublic");
         }
+        backBtn.pos.x = canvas.width / 2 - backBtn.width - 2;
+        backBtn.pos.y = canvas.height / 2 - 120;
+        settingsBtn.pos.x = canvas.width / 2 + 2;
+        settingsBtn.pos.y = canvas.height / 2 - 120;
         socket.emit("playerJoin", player);
-        requestAnimationFrame(gameLoop);
+        state = State.Paused;
+        requestAnimationFrame(handleState);
     }
 };

@@ -4,4 +4,7 @@ export type Inputs = {
   left: boolean;
   right: boolean;
   interact: boolean;
+  pause: boolean;
+  mouse: boolean;
+  use: boolean;
 };
