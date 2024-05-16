@@ -63,7 +63,7 @@ const button = (pos, text, fun, type) => {
             fun();
         }));
     }
-    else if (type === ButtonType.Death) {
+    else {
         deathButtons.push(new Button(ctx, pos, text, 3, () => {
             player.inputs.mouse = false;
             fun();
