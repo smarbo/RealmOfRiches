@@ -8,7 +8,7 @@ import { ItemTypes, Items } from "./Item.js";
 import { Sword } from "./Sword.js";
 import { Direction, Skeleton } from "./Skeleton.js";
 import { State } from "./State.js";
-import { Button } from "./Button.js";
+import { Button, ButtonType } from "./Button.js";
 // @ts-ignore
 const socket = io();
 let room = "";
@@ -22,6 +22,8 @@ cursorImg.src = "assets/cursor.png";
 const attackAnimation = new Image();
 attackAnimation.src = "assets/attackAnimation.png";
 const roomButton = document.getElementById("roomButton");
+const footer = document.getElementById("footer");
+const backLink = document.getElementById("back");
 const roomInput = document.getElementById("roomInput");
 const userInput = document.getElementById("userInput");
 const serverSelector = document.getElementById("serverSelector");
@@ -46,8 +48,28 @@ const map = new GameObject(ctx, { x: 0, y: 0 }, "assets/rormap.png");
 const foreground = new GameObject(ctx, { x: 0, y: 0 }, "assets/foreground.png");
 const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/pauseTitle.png");
 const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/slainTitle.png");
-const backBtn = new Button(ctx, { x: 0, y: 0 }, "assets/backButton.png", "assets/backButtonHover.png", 3);
-const settingsBtn = new Button(ctx, { x: 0, y: 0 }, "assets/settingsButton.png", "assets/settingsButtonHover.png", 3);
+const buttons = [];
+const deathButtons = [];
+const button = (pos, text, fun, type) => {
+    if (type === ButtonType.Settings) {
+        settingsButtons.push(new Button(ctx, pos, text, 3, () => {
+            player.inputs.mouse = false;
+            fun();
+        }));
+    }
+    else if (type === ButtonType.Menu) {
+        buttons.push(new Button(ctx, pos, text, 3, () => {
+            player.inputs.mouse = false;
+            fun();
+        }));
+    }
+    else if (type === ButtonType.Death) {
+        deathButtons.push(new Button(ctx, pos, text, 3, () => {
+            player.inputs.mouse = false;
+            fun();
+        }));
+    }
+};
 const collisionsMap = [];
 for (let i = 0; i < collisions.length; i += 140) {
     collisionsMap.push(collisions.slice(i, i + 140));
@@ -153,6 +175,7 @@ let lastTime = 0;
 const frameDuration = 1000 / 60; // 60 fps
 let worldItems = [];
 let closestPlayer;
+let settings = false;
 const cursor = () => {
     if (state === State.Running) {
         mouse = {
@@ -199,6 +222,9 @@ const gameLoop = () => {
         });
     }
     player.update(state);
+    if (player.health < 1) {
+        state = State.Dead;
+    }
     if (player.inputs.pause) {
         player.inputs.pause = false;
         if (state === State.Running)
@@ -316,6 +342,13 @@ const gameLoop = () => {
     cursor();
     ctx.restore();
 };
+const click = (btn) => {
+    return btn.hover(mouse) && player.inputs.mouse;
+};
+const hover = (btn) => {
+    return btn.hover(mouse);
+};
+const settingsButtons = [];
 const pauseMenu = () => {
     gameLoop();
     ctx.fillStyle = "rgba(84,84,59,0.8)";
@@ -325,22 +358,47 @@ const pauseMenu = () => {
         y: canvas.height / 2 - pauseTitle.img.height / 4 - 200,
     };
     pauseTitle.draw(pauseTitle.img.width / 2, pauseTitle.img.height / 2);
-    if (backBtn.hover(mouse))
-        backBtn.drawHover();
-    else
-        backBtn.draw();
-    if (settingsBtn.hover(mouse))
-        settingsBtn.drawHover();
-    else
-        settingsBtn.draw();
-    if (backBtn.hover(mouse) && player.inputs.mouse) {
-        state = State.Running;
+    ctx.font = "30px Poetsen One";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    if (settings) {
+        ctx.fillText("Settings", canvas.width / 2, canvas.height / 2 - 160);
+        settingsButtons.forEach((b) => {
+            if (hover(b))
+                b.drawHover();
+            else
+                b.draw();
+            if (click(b))
+                b.fun();
+        });
+    }
+    else {
+        ctx.fillText("Game Menu", canvas.width / 2, canvas.height / 2 - 160);
+        buttons.forEach((b) => {
+            if (hover(b))
+                b.drawHover();
+            else
+                b.draw();
+            if (click(b))
+                b.fun();
+        });
     }
     cursor();
 };
 const deathScreen = () => {
     gameLoop();
+    slainTitle.pos = {
+        x: canvas.width / 2 - slainTitle.img.width / 2,
+        y: canvas.height / 2 - slainTitle.img.height / 2,
+    };
     slainTitle.draw();
+    if (hover(deathButtons[0]))
+        deathButtons[0].drawHover();
+    else
+        deathButtons[0].draw();
+    if (click(deathButtons[0]))
+        deathButtons[0].fun();
+    cursor();
 };
 //* Main game loop
 function handleState(timestamp) {
@@ -380,6 +438,10 @@ roomButton.onclick = () => {
         player.id = socket.id;
         worldContainer.hidden = true;
         worldContainer.style.display = "none";
+        footer.hidden = true;
+        footer.style.display = "none";
+        backLink.hidden = true;
+        backLink.style.display = "none";
         room = roomInput.value;
         canvas.style.display = "block";
         socket.emit("message", "Player joined.");
@@ -389,10 +451,27 @@ roomButton.onclick = () => {
         else if (!publicPrivate.checked) {
             socket.emit("joinPublic");
         }
-        backBtn.pos.x = canvas.width / 2 - backBtn.width - 2;
-        backBtn.pos.y = canvas.height / 2 - 120;
-        settingsBtn.pos.x = canvas.width / 2 + 2;
-        settingsBtn.pos.y = canvas.height / 2 - 120;
+        button({
+            x: canvas.width / 2 - Button.width - 2,
+            y: canvas.height / 2 - 120,
+        }, "BACK TO GAME", () => {
+            state = State.Running;
+        }, ButtonType.Menu);
+        button({ x: canvas.width / 2 + 2, y: canvas.height / 2 - 120 }, "SETTINGS", () => {
+            settings = true;
+        }, ButtonType.Menu);
+        button({ x: canvas.width / 2 + 2, y: canvas.height / 2 - 120 + 48 + 24 }, "LEAVE WORLD", () => {
+            window.location.href = "";
+        }, ButtonType.Menu);
+        button({ x: canvas.width / 2 - Button.width / 2, y: canvas.height / 2 - 120 }, "BACK TO MENU", () => {
+            settings = false;
+        }, ButtonType.Settings);
+        button({
+            x: canvas.width / 2 - Button.width / 2,
+            y: canvas.width / 2 - Button.height / 2 + 130,
+        }, "ACCEPT YOUR FATE", () => {
+            window.location.href = "";
+        }, ButtonType.Death);
         socket.emit("playerJoin", player);
         state = State.Paused;
         requestAnimationFrame(handleState);

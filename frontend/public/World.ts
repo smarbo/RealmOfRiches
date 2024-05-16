@@ -9,7 +9,7 @@ import { Sword } from "./Sword.js";
 import { Direction, Skeleton } from "./Skeleton.js";
 import { Vector } from "./Vector.js";
 import { State } from "./State.js";
-import { Button } from "./Button.js";
+import { Button, ButtonType } from "./Button.js";
 // @ts-ignore
 
 const socket: Socket = io();
@@ -29,6 +29,8 @@ const attackAnimation = new Image();
 attackAnimation.src = "assets/attackAnimation.png";
 
 const roomButton = document.getElementById("roomButton") as HTMLButtonElement;
+const footer = document.getElementById("footer") as HTMLDivElement;
+const backLink = document.getElementById("back") as HTMLAnchorElement;
 const roomInput = document.getElementById("roomInput") as HTMLInputElement;
 const userInput = document.getElementById("userInput") as HTMLInputElement;
 const serverSelector = document.getElementById(
@@ -63,20 +65,34 @@ const map = new GameObject(ctx, { x: 0, y: 0 }, "assets/rormap.png");
 const foreground = new GameObject(ctx, { x: 0, y: 0 }, "assets/foreground.png");
 const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/pauseTitle.png");
 const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/slainTitle.png");
-const backBtn = new Button(
-  ctx,
-  { x: 0, y: 0 },
-  "assets/backButton.png",
-  "assets/backButtonHover.png",
-  3
-);
-const settingsBtn = new Button(
-  ctx,
-  { x: 0, y: 0 },
-  "assets/settingsButton.png",
-  "assets/settingsButtonHover.png",
-  3
-);
+
+const buttons: Button[] = [];
+const deathButtons: Button[] = [];
+
+const button = (pos: Vector, text: string, fun: Function, type: ButtonType) => {
+  if (type === ButtonType.Settings) {
+    settingsButtons.push(
+      new Button(ctx, pos, text, 3, () => {
+        player.inputs.mouse = false;
+        fun();
+      })
+    );
+  } else if (type === ButtonType.Menu) {
+    buttons.push(
+      new Button(ctx, pos, text, 3, () => {
+        player.inputs.mouse = false;
+        fun();
+      })
+    );
+  } else if (type === ButtonType.Death) {
+    deathButtons.push(
+      new Button(ctx, pos, text, 3, () => {
+        player.inputs.mouse = false;
+        fun();
+      })
+    );
+  }
+};
 
 const collisionsMap = [];
 for (let i = 0; i < collisions.length; i += 140) {
@@ -225,6 +241,8 @@ const frameDuration = 1000 / 60; // 60 fps
 let worldItems: WorldItem[] = [];
 let closestPlayer: OtherPlayer | Player;
 
+let settings: boolean = false;
+
 const cursor = () => {
   if (state === State.Running) {
     mouse = {
@@ -291,6 +309,9 @@ const gameLoop = () => {
   }
 
   player.update(state);
+  if (player.health < 1) {
+    state = State.Dead;
+  }
   if (player.inputs.pause) {
     player.inputs.pause = false;
     if (state === State.Running) state = State.Paused;
@@ -421,6 +442,16 @@ const gameLoop = () => {
   ctx.restore();
 };
 
+const click = (btn: Button) => {
+  return btn.hover(mouse) && player.inputs.mouse;
+};
+
+const hover = (btn: Button) => {
+  return btn.hover(mouse);
+};
+
+const settingsButtons: Button[] = [];
+
 const pauseMenu = () => {
   gameLoop();
   ctx.fillStyle = "rgba(84,84,59,0.8)";
@@ -430,19 +461,42 @@ const pauseMenu = () => {
     y: canvas.height / 2 - pauseTitle.img.height / 4 - 200,
   };
   pauseTitle.draw(pauseTitle.img.width / 2, pauseTitle.img.height / 2);
-  if (backBtn.hover(mouse)) backBtn.drawHover();
-  else backBtn.draw();
-  if (settingsBtn.hover(mouse)) settingsBtn.drawHover();
-  else settingsBtn.draw();
-  if (backBtn.hover(mouse) && player.inputs.mouse) {
-    state = State.Running;
+
+  ctx.font = "30px Poetsen One";
+  ctx.textAlign = "center";
+  ctx.fillStyle = "white";
+
+  if (settings) {
+    ctx.fillText("Settings", canvas.width / 2, canvas.height / 2 - 160);
+    settingsButtons.forEach((b) => {
+      if (hover(b)) b.drawHover();
+      else b.draw();
+      if (click(b)) b.fun();
+    });
+  } else {
+    ctx.fillText("Game Menu", canvas.width / 2, canvas.height / 2 - 160);
+    buttons.forEach((b) => {
+      if (hover(b)) b.drawHover();
+      else b.draw();
+      if (click(b)) b.fun();
+    });
   }
+
   cursor();
 };
 
 const deathScreen = () => {
   gameLoop();
+  slainTitle.pos = {
+    x: canvas.width / 2 - slainTitle.img.width / 2,
+    y: canvas.height / 2 - slainTitle.img.height / 2,
+  };
   slainTitle.draw();
+  if (hover(deathButtons[0])) deathButtons[0].drawHover();
+  else deathButtons[0].draw();
+  if (click(deathButtons[0])) deathButtons[0].fun();
+
+  cursor();
 };
 
 //* Main game loop
@@ -495,6 +549,10 @@ roomButton.onclick = () => {
     player.id = socket.id;
     worldContainer.hidden = true;
     worldContainer.style.display = "none";
+    footer.hidden = true;
+    footer.style.display = "none";
+    backLink.hidden = true;
+    backLink.style.display = "none";
 
     room = roomInput.value;
     canvas.style.display = "block";
@@ -505,11 +563,54 @@ roomButton.onclick = () => {
       socket.emit("joinPublic");
     }
 
-    backBtn.pos.x = canvas.width / 2 - backBtn.width - 2;
-    backBtn.pos.y = canvas.height / 2 - 120;
+    button(
+      {
+        x: canvas.width / 2 - Button.width - 2,
+        y: canvas.height / 2 - 120,
+      },
+      "BACK TO GAME",
+      () => {
+        state = State.Running;
+      },
+      ButtonType.Menu
+    );
+    button(
+      { x: canvas.width / 2 + 2, y: canvas.height / 2 - 120 },
+      "SETTINGS",
+      () => {
+        settings = true;
+      },
+      ButtonType.Menu
+    );
+    button(
+      { x: canvas.width / 2 + 2, y: canvas.height / 2 - 120 + 48 + 24 },
+      "LEAVE WORLD",
+      () => {
+        window.location.href = "";
+      },
+      ButtonType.Menu
+    );
 
-    settingsBtn.pos.x = canvas.width / 2 + 2;
-    settingsBtn.pos.y = canvas.height / 2 - 120;
+    button(
+      { x: canvas.width / 2 - Button.width / 2, y: canvas.height / 2 - 120 },
+      "BACK TO MENU",
+      () => {
+        settings = false;
+      },
+      ButtonType.Settings
+    );
+
+    button(
+      {
+        x: canvas.width / 2 - Button.width / 2,
+        y: canvas.width / 2 - Button.height / 2 + 130,
+      },
+      "ACCEPT YOUR FATE",
+      () => {
+        window.location.href = "";
+      },
+      ButtonType.Death
+    );
 
     socket.emit("playerJoin", player);
 

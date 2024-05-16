@@ -196,8 +196,14 @@ export class Player extends GameObject {
         if (this.energy < 0) {
             this.energy = 0;
         }
+        if (this.energy > 100) {
+            this.energy = 100;
+        }
         if (this.health < 100) {
             this.health += 0.02;
+        }
+        if (this.health > 100) {
+            this.health = 100;
         }
         if (this.health < 0) {
             this.health = 0;
@@ -257,7 +263,9 @@ export class Player extends GameObject {
             this.ctx.fillStyle = "rgba(0,0,0,0.3)";
             this.ctx.fillRect(this.pos.x + 24 - 175, this.pos.y + this.ctx.canvas.height / 2 - 45, 170, 20);
             this.ctx.fillStyle = "limegreen";
-            this.ctx.fillRect(this.pos.x + 24 - 175, this.pos.y + this.ctx.canvas.height / 2 - 45, (170 * this.health) / 100, 20);
+            this.ctx.fillRect(this.pos.x + 24 - 175, this.pos.y + this.ctx.canvas.height / 2 - 45, (170 *
+                (this.health < 100 ? (this.health > 0 ? this.health : 0) : 100)) /
+                100, 20);
             this.ctx.fillStyle = "white";
             this.ctx.font = "bold 13px Arial";
             this.ctx.fillText(this.health.toFixed(0).toString(), this.pos.x + 24 - 167, this.pos.y + this.ctx.canvas.height / 2 - 30);
@@ -268,7 +276,9 @@ export class Player extends GameObject {
             this.ctx.fillStyle = "rgba(0,0,0,0.3)";
             this.ctx.fillRect(this.pos.x + 24 + 5, this.pos.y + this.ctx.canvas.height / 2 - 45, 170, 20);
             this.ctx.fillStyle = "#673ab7";
-            this.ctx.fillRect(this.pos.x + 24 + 5, this.pos.y + this.ctx.canvas.height / 2 - 45, (170 * this.energy) / 100, 20);
+            this.ctx.fillRect(this.pos.x + 24 + 5, this.pos.y + this.ctx.canvas.height / 2 - 45, (170 *
+                (this.energy < 100 ? (this.energy > 0 ? this.energy : 0) : 100)) /
+                100, 20);
             this.ctx.fillStyle = "white";
             this.ctx.font = "bold 13px Arial";
             this.ctx.fillText(this.energy.toFixed(0).toString(), this.pos.x + 37, this.pos.y + this.ctx.canvas.height / 2 - 30);

@@ -119,6 +119,15 @@ io.on("connection", (socket: Socket) => {
     console.log(`[SOCKET.${socket.id}]: ${msg}`);
   });
   socket.on("disconnecting", () => {
+    const room = Array.from(socket.rooms).filter((r) => r != socket.id)[0];
+    const roomData = io.sockets.adapter.rooms.get(room);
+
+    if (roomData) {
+      if (Array.from(roomData).length === 1) {
+        roomsEnemies[room] = [];
+      }
+    }
+
     socket.broadcast
       .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
       .emit("playerLeave", socket.id);
