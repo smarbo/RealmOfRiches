@@ -50,24 +50,24 @@ const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/pauseTitle.png");
 const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/slainTitle.png");
 const buttons = [];
 const deathButtons = [];
-const button = (pos, text, fun, type) => {
+const button = (pos, text, fun, type, overlay) => {
     if (type === ButtonType.Settings) {
         settingsButtons.push(new Button(ctx, pos, text, 3, () => {
             player.inputs.mouse = false;
             fun();
-        }));
+        }, overlay));
     }
     else if (type === ButtonType.Menu) {
         buttons.push(new Button(ctx, pos, text, 3, () => {
             player.inputs.mouse = false;
             fun();
-        }));
+        }, overlay));
     }
     else {
         deathButtons.push(new Button(ctx, pos, text, 3, () => {
             player.inputs.mouse = false;
             fun();
-        }));
+        }, overlay));
     }
 };
 const collisionsMap = [];
@@ -468,10 +468,10 @@ roomButton.onclick = () => {
         }, ButtonType.Settings);
         button({
             x: canvas.width / 2 - Button.width / 2,
-            y: canvas.width / 2 - Button.height / 2 + 130,
+            y: canvas.height / 2 + Button.height,
         }, "ACCEPT YOUR FATE", () => {
             window.location.href = "";
-        }, ButtonType.Death);
+        }, ButtonType.Death, "rgba(200,80,80,0.5)");
         socket.emit("playerJoin", player);
         state = State.Paused;
         requestAnimationFrame(handleState);

@@ -8,15 +8,17 @@ export var ButtonType;
 export class Button extends GameObject {
     text;
     fun;
+    overlay;
     static width = 192;
     static height = 48;
     width = 0;
     height = 0;
     hoverImg;
-    constructor(ctx, pos, text, scale, fun) {
+    constructor(ctx, pos, text, scale, fun, overlay) {
         super(ctx, pos, "assets/button.png");
         this.text = text;
         this.fun = fun;
+        this.overlay = overlay;
         this.hoverImg = new Image();
         this.hoverImg.src = "assets/buttonHover.png";
         this.img.onload = () => {
@@ -26,6 +28,7 @@ export class Button extends GameObject {
     }
     draw() {
         this.ctx.drawImage(this.img, this.pos.x, this.pos.y, this.width, this.height);
+        this.overlay && this.drawOverlay();
         this.ctx.font = "24px VT323";
         this.ctx.fillStyle = "white";
         this.ctx.textAlign = "center";
@@ -34,11 +37,16 @@ export class Button extends GameObject {
     }
     drawHover() {
         this.ctx.drawImage(this.hoverImg, this.pos.x, this.pos.y, this.width, this.height);
+        this.overlay && this.drawOverlay();
         this.ctx.font = "24px VT323";
         this.ctx.fillStyle = "#bac7d1";
         this.ctx.textAlign = "center";
         this.ctx.textBaseline = "middle";
         this.ctx.fillText(this.text, this.pos.x + this.width / 2, this.pos.y + this.height / 2);
+    }
+    drawOverlay() {
+        this.ctx.fillStyle = this.overlay;
+        this.ctx.fillRect(this.pos.x, this.pos.y, this.width, this.height);
     }
     hover(mouse) {
         return (mouse.x >= this.pos.x - 24 &&

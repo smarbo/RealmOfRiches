@@ -69,27 +69,54 @@ const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/slainTitle.png");
 const buttons: Button[] = [];
 const deathButtons: Button[] = [];
 
-const button = (pos: Vector, text: string, fun: Function, type: ButtonType) => {
+const button = (
+  pos: Vector,
+  text: string,
+  fun: Function,
+  type: ButtonType,
+  overlay?: string
+) => {
   if (type === ButtonType.Settings) {
     settingsButtons.push(
-      new Button(ctx, pos, text, 3, () => {
-        player.inputs.mouse = false;
-        fun();
-      })
+      new Button(
+        ctx,
+        pos,
+        text,
+        3,
+        () => {
+          player.inputs.mouse = false;
+          fun();
+        },
+        overlay
+      )
     );
   } else if (type === ButtonType.Menu) {
     buttons.push(
-      new Button(ctx, pos, text, 3, () => {
-        player.inputs.mouse = false;
-        fun();
-      })
+      new Button(
+        ctx,
+        pos,
+        text,
+        3,
+        () => {
+          player.inputs.mouse = false;
+          fun();
+        },
+        overlay
+      )
     );
   } else {
     deathButtons.push(
-      new Button(ctx, pos, text, 3, () => {
-        player.inputs.mouse = false;
-        fun();
-      })
+      new Button(
+        ctx,
+        pos,
+        text,
+        3,
+        () => {
+          player.inputs.mouse = false;
+          fun();
+        },
+        overlay
+      )
     );
   }
 };
@@ -603,13 +630,14 @@ roomButton.onclick = () => {
     button(
       {
         x: canvas.width / 2 - Button.width / 2,
-        y: canvas.width / 2 - Button.height / 2 + 130,
+        y: canvas.height / 2 + Button.height,
       },
       "ACCEPT YOUR FATE",
       () => {
         window.location.href = "";
       },
-      ButtonType.Death
+      ButtonType.Death,
+      "rgba(200,80,80,0.5)"
     );
 
     socket.emit("playerJoin", player);
