@@ -6,3 +6,5 @@ game chat
 interiors (add kians idea)
 mobile controls (top priority)
  - complete joystick movement
+
+when player disconnects from room check if is any players left in room if yes then set the first player as AI host if not then reset enemies.

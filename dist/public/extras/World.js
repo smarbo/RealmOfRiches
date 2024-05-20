@@ -349,21 +349,57 @@ const gameLoop = () => {
                 }
             });
         }
-        if (player.pos.x + player.width >= b.pos.x &&
-            player.pos.x <= b.pos.x + b.width &&
-            player.pos.y + player.height >= b.pos.y &&
-            player.pos.y + player.height / 2 <= b.pos.y + b.height) {
-            if (player.lastKey === "w") {
-                player.pos.y += player.speed;
+        if (player.pos.x + player.width > b.pos.x &&
+            player.pos.x < b.pos.x + b.width &&
+            player.pos.y + player.height > b.pos.y &&
+            player.pos.y + player.height / 2 < b.pos.y + b.height) {
+            if (player.mobile) {
+                if (player.lastKey === "w") {
+                    player.colliding.up = true;
+                }
+                else if (player.lastKey === "a") {
+                    player.colliding.left = true;
+                }
+                else if (player.lastKey === "s") {
+                    player.colliding.down = true;
+                }
+                else if (player.lastKey === "d") {
+                    player.colliding.right = true;
+                }
+                if (player.colliding.up) {
+                    player.pos.y += player.speed;
+                    player.colliding.up = false;
+                    player.lastKey = "w";
+                }
+                if (player.colliding.left) {
+                    player.pos.x += player.speed;
+                    player.colliding.left = false;
+                    player.lastKey = "a";
+                }
+                if (player.colliding.down) {
+                    player.pos.y -= player.speed;
+                    player.colliding.down = false;
+                    player.lastKey = "s";
+                }
+                if (player.colliding.right) {
+                    player.pos.x -= player.speed;
+                    player.colliding.right = false;
+                    player.lastKey = "d";
+                }
             }
-            if (player.lastKey === "a") {
-                player.pos.x += player.speed;
-            }
-            if (player.lastKey === "s") {
-                player.pos.y -= player.speed;
-            }
-            if (player.lastKey === "d") {
-                player.pos.x -= player.speed;
+            else {
+                if (player.lastKey === "w") {
+                    player.pos.y += player.speed;
+                }
+                if (player.lastKey === "a") {
+                    player.pos.x += player.speed;
+                }
+                if (player.lastKey === "s") {
+                    player.pos.y -= player.speed;
+                }
+                if (player.lastKey === "d") {
+                    player.pos.x -= player.speed;
+                }
             }
         }
     });
@@ -452,7 +488,7 @@ function handleState(timestamp) {
 //* Join lobby button - start game
 roomButton.onclick = () => {
     if (userInput.value != "") {
-        player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", spawnEnemy, 4, {
+        player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", spawnEnemy, 4, selected === Choice.Mobile ? true : false, {
             max: 4,
             val: 0,
             tick: 0,
@@ -463,7 +499,6 @@ roomButton.onclick = () => {
                 down: new Image(),
             },
         }, userInput.value);
-        player.mobile = selected === Choice.Mobile ? true : false;
         player.id = socket.id;
         worldContainer.hidden = true;
         worldContainer.style.display = "none";

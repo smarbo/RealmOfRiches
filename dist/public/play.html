@@ -76,5 +76,10 @@
     <script>
       const socket = io();
     </script>
+    <script>
+      document.addEventListener("gesturestart", (e) => {
+        e.preventDefault();
+      });
+    </script>
   </body>
 </html>

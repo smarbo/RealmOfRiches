@@ -7,13 +7,13 @@ cursor.src = "assets/cursor.png";
 export class Player extends GameObject {
     spawnEnemy;
     speed;
+    mobile;
     frames;
     username;
-    mobile = false;
     joystickPos;
     joystickTouch;
-    joyBase;
-    joyHand;
+    movestickBase;
+    movestickHand;
     touches = [];
     inputs;
     lastKey;
@@ -32,7 +32,8 @@ export class Player extends GameObject {
     inventory;
     grabbing = false;
     hat;
-    constructor(ctx, pos, img, spawnEnemy, speed, frames = {
+    colliding = { up: false, down: false, left: false, right: false };
+    constructor(ctx, pos, img, spawnEnemy, speed, mobile, frames = {
         max: 4,
         val: 0,
         tick: 0,
@@ -46,6 +47,7 @@ export class Player extends GameObject {
         super(ctx, pos, img);
         this.spawnEnemy = spawnEnemy;
         this.speed = speed;
+        this.mobile = mobile;
         this.frames = frames;
         this.username = username;
         this.inventory = new Inventory(ctx, this);
@@ -59,87 +61,89 @@ export class Player extends GameObject {
             mouse: false,
             use: false,
         };
-        this.joyBase = new GameObject(ctx, { x: 25, y: 25 }, "assets/joystickBase.png");
-        this.joyHand = new GameObject(ctx, { x: 25, y: 25 }, "assets/joystickHandle.png");
+        this.movestickBase = new GameObject(ctx, { x: 25, y: 25 }, "assets/joystickBase.png");
+        this.movestickHand = new GameObject(ctx, { x: 25, y: 25 }, "assets/joystickHandle.png");
         this.joystickPos = {
-            x: this.joyBase.pos.x +
-                this.joyBase.img.width / 4 -
-                this.joyHand.img.width / 4,
-            y: this.joyBase.pos.y +
-                this.joyBase.img.height / 4 -
-                this.joyHand.img.height / 4,
+            x: this.movestickBase.pos.x +
+                this.movestickBase.img.width / 4 -
+                this.movestickHand.img.width / 4,
+            y: this.movestickBase.pos.y +
+                this.movestickBase.img.height / 4 -
+                this.movestickHand.img.height / 4,
         };
         this.lastKey = "";
         this.frames.imgs.up.src = "assets/playerUp.png";
         this.frames.imgs.down.src = "assets/playerDown.png";
         this.frames.imgs.left.src = "assets/playerLeft.png";
         this.frames.imgs.right.src = "assets/playerRight.png";
-        window.addEventListener("keydown", (e) => {
-            const keyNum = parseInt(e.key);
-            if (keyNum >= 1 && keyNum <= 8) {
-                this.inventory.selected = keyNum - 1;
-            }
-            switch (e.key.toLowerCase()) {
-                case "e":
-                    this.inputs.interact = true;
-                    break;
-                case "w":
-                    this.inputs.up = true;
-                    this.lastKey = "w";
-                    this.moving = true;
-                    break;
-                case "s":
-                    this.inputs.down = true;
-                    this.lastKey = "s";
-                    this.moving = true;
-                    break;
-                case "a":
-                    this.inputs.left = true;
-                    this.lastKey = "a";
-                    this.moving = true;
-                    break;
-                case "d":
-                    this.inputs.right = true;
-                    this.lastKey = "d";
-                    this.moving = true;
-                    break;
-                case "escape":
-                    this.inputs.pause = true;
-                    break;
-                case "f":
-                    this.inputs.use = true;
-                    break;
-            }
-        });
-        window.addEventListener("keyup", (e) => {
-            switch (e.key.toLowerCase()) {
-                case "e":
-                    this.inputs.interact = false;
-                    break;
-                case "w":
-                    this.inputs.up = false;
-                    this.moving = false;
-                    break;
-                case "s":
-                    this.inputs.down = false;
-                    this.moving = false;
-                    break;
-                case "a":
-                    this.inputs.left = false;
-                    this.moving = false;
-                    break;
-                case "d":
-                    this.inputs.right = false;
-                    this.moving = false;
-                    break;
-                case "escape":
-                    this.inputs.pause = false;
-                    break;
-                case "f":
-                    this.inputs.use = false;
-                    break;
-            }
-        });
+        if (!this.mobile) {
+            window.addEventListener("keydown", (e) => {
+                const keyNum = parseInt(e.key);
+                if (keyNum >= 1 && keyNum <= 8) {
+                    this.inventory.selected = keyNum - 1;
+                }
+                switch (e.key.toLowerCase()) {
+                    case "e":
+                        this.inputs.interact = true;
+                        break;
+                    case "w":
+                        this.inputs.up = true;
+                        this.lastKey = "w";
+                        this.moving = true;
+                        break;
+                    case "s":
+                        this.inputs.down = true;
+                        this.lastKey = "s";
+                        this.moving = true;
+                        break;
+                    case "a":
+                        this.inputs.left = true;
+                        this.lastKey = "a";
+                        this.moving = true;
+                        break;
+                    case "d":
+                        this.inputs.right = true;
+                        this.lastKey = "d";
+                        this.moving = true;
+                        break;
+                    case "escape":
+                        this.inputs.pause = true;
+                        break;
+                    case "f":
+                        this.inputs.use = true;
+                        break;
+                }
+            });
+            window.addEventListener("keyup", (e) => {
+                switch (e.key.toLowerCase()) {
+                    case "e":
+                        this.inputs.interact = false;
+                        break;
+                    case "w":
+                        this.inputs.up = false;
+                        this.moving = false;
+                        break;
+                    case "s":
+                        this.inputs.down = false;
+                        this.moving = false;
+                        break;
+                    case "a":
+                        this.inputs.left = false;
+                        this.moving = false;
+                        break;
+                    case "d":
+                        this.inputs.right = false;
+                        this.moving = false;
+                        break;
+                    case "escape":
+                        this.inputs.pause = false;
+                        break;
+                    case "f":
+                        this.inputs.use = false;
+                        break;
+                }
+            });
+        }
         window.addEventListener("wheel", (e) => {
             if (e.deltaY > 0) {
                 this.inventory.selected -= 1;
@@ -227,16 +231,15 @@ export class Player extends GameObject {
                     y: this.pos.y + yOff,
                 };
                 const joy = {
-                    x: this.joyBase.pos.x +
-                        this.joyBase.img.width / 4 -
-                        this.joyHand.img.width / 4,
-                    y: this.joyBase.pos.y +
-                        this.joyBase.img.height / 4 -
-                        this.joyHand.img.height / 4,
+                    x: this.movestickBase.pos.x +
+                        this.movestickBase.img.width / 4 -
+                        this.movestickHand.img.width / 4,
+                    y: this.movestickBase.pos.y +
+                        this.movestickBase.img.height / 4 -
+                        this.movestickHand.img.height / 4,
                 };
                 if (magnitude({ x: joy.x - touch.x, y: joy.y - touch.y }) < 60) {
                     this.joystickTouch = t.identifier;
-                    console.log("touching");
                 }
             });
         }
@@ -363,52 +366,128 @@ export class Player extends GameObject {
             this.ctx.fillText("| 100", this.pos.x + (this.energy < 100 ? 59 : 64), this.pos.y + this.ctx.canvas.height / 2 - 30);
             // joystick
             if (this.mobile) {
-                this.joyBase.draw(this.joyBase.img.width / 2, this.joyBase.img.height / 2);
-                this.joyBase.pos = {
-                    x: this.pos.x - this.ctx.canvas.width / 2 + 75,
-                    y: this.pos.y + this.ctx.canvas.height / 2 - 124,
-                };
-                if (this.inputs.mouse && this.joystickTouch !== undefined) {
-                    console.log("doing");
-                    const t = Array.from(this.touches).find((t) => t.identifier === this.joystickTouch);
-                    const rect = this.ctx.canvas.getBoundingClientRect();
-                    let touch;
-                    let xOff = t.clientX - rect.left - this.ctx.canvas.width / 2;
-                    let yOff = t.clientY - rect.top - this.ctx.canvas.height / 2;
-                    touch = {
-                        x: this.pos.x + xOff,
-                        y: this.pos.y + yOff,
+                const movementStick = () => {
+                    this.movestickBase.draw(this.movestickBase.img.width / 2, this.movestickBase.img.height / 2);
+                    this.movestickBase.pos = {
+                        x: this.pos.x - this.ctx.canvas.width / 2 + 75,
+                        y: this.pos.y + this.ctx.canvas.height / 2 - 124,
                     };
-                    const joy = {
-                        x: this.joyBase.pos.x +
-                            this.joyBase.img.width / 4 -
-                            this.joyHand.img.width / 4,
-                        y: this.joyBase.pos.y +
-                            this.joyBase.img.height / 4 -
-                            this.joyHand.img.height / 4 -
-                            10,
+                    const reset = () => {
+                        this.inputs.up = false;
+                        this.inputs.left = false;
+                        this.inputs.right = false;
+                        this.inputs.down = false;
+                        this.moving = false;
                     };
-                    if (magnitude({ x: joy.x - touch.x, y: joy.y - touch.y }) > 60) {
+                    // touching joystick
+                    if (this.inputs.mouse && this.joystickTouch !== undefined) {
+                        const t = Array.from(this.touches).find((t) => t.identifier === this.joystickTouch);
+                        const rect = this.ctx.canvas.getBoundingClientRect();
+                        let touch;
+                        let xOff = t.clientX - rect.left - this.ctx.canvas.width / 2;
+                        let yOff = t.clientY - rect.top - this.ctx.canvas.height / 2;
+                        touch = {
+                            x: this.pos.x + xOff,
+                            y: this.pos.y + yOff,
+                        };
+                        const joy = {
+                            x: this.movestickBase.pos.x +
+                                this.movestickBase.img.width / 4 -
+                                this.movestickHand.img.width / 4,
+                            y: this.movestickBase.pos.y +
+                                this.movestickBase.img.height / 4 -
+                                this.movestickHand.img.height / 4 -
+                                10,
+                        };
                         const angle = Math.atan2(touch.y - joy.y, touch.x - joy.x);
-                        touch.x = joy.x + Math.cos(angle) * 60;
-                        touch.y = joy.y + Math.sin(angle) * 60;
+                        if (magnitude({ x: joy.x - touch.x, y: joy.y - touch.y }) > 60) {
+                            touch.x = joy.x + Math.cos(angle) * 60;
+                            touch.y = joy.y + Math.sin(angle) * 60;
+                        }
+                        const deg = (angle * 180) / Math.PI + 135;
+                        if (deg > 90 && deg < 180) {
+                            if (this.lastKey === "s") {
+                                this.pos.y -= this.speed;
+                            }
+                            if (this.lastKey === "w") {
+                                this.pos.y += this.speed;
+                            }
+                            if (this.lastKey === "a") {
+                                this.pos.x += this.speed;
+                            }
+                            reset();
+                            this.inputs.right = true;
+                            this.lastKey = "d";
+                            this.moving = true;
+                        }
+                        else if (deg > 180 && deg < 270) {
+                            if (this.lastKey === "d") {
+                                this.pos.x -= this.speed;
+                            }
+                            if (this.lastKey === "w") {
+                                this.pos.y += this.speed;
+                            }
+                            if (this.lastKey === "a") {
+                                this.pos.x += this.speed;
+                            }
+                            reset();
+                            this.inputs.down = true;
+                            this.lastKey = "s";
+                            this.moving = true;
+                        }
+                        else if ((deg > 270 && deg < 315) || (deg > -45 && deg < 0)) {
+                            if (this.lastKey === "s") {
+                                this.pos.y -= this.speed;
+                            }
+                            if (this.lastKey === "w") {
+                                this.pos.y += this.speed;
+                            }
+                            if (this.lastKey === "d") {
+                                this.pos.x += this.speed;
+                            }
+                            reset();
+                            this.inputs.left = true;
+                            this.lastKey = "a";
+                            this.moving = true;
+                        }
+                        else if (deg > 0 && deg < 90) {
+                            if (this.lastKey === "s") {
+                                this.pos.y -= this.speed;
+                            }
+                            if (this.lastKey === "d") {
+                                this.pos.x -= this.speed;
+                            }
+                            if (this.lastKey === "a") {
+                                this.pos.x += this.speed;
+                            }
+                            reset();
+                            this.inputs.up = true;
+                            this.lastKey = "w";
+                            this.moving = true;
+                        }
+                        else {
+                            reset();
+                        }
+                        this.movestickHand.pos = {
+                            x: touch.x,
+                            y: touch.y + this.movestickHand.img.height / 8,
+                        };
                     }
-                    this.joyHand.pos = {
-                        x: touch.x,
-                        y: touch.y + this.joyHand.img.height / 8,
-                    };
-                }
-                else {
-                    this.joyHand.pos = {
-                        x: this.joyBase.pos.x +
-                            this.joyBase.img.width / 4 -
-                            this.joyHand.img.width / 4,
-                        y: this.joyBase.pos.y +
-                            this.joyBase.img.height / 4 -
-                            this.joyHand.img.height / 4,
-                    };
-                }
-                this.joyHand.draw(this.joyHand.img.width / 2, this.joyHand.img.height / 2);
+                    else {
+                        reset();
+                        this.movestickHand.pos = {
+                            x: this.movestickBase.pos.x +
+                                this.movestickBase.img.width / 4 -
+                                this.movestickHand.img.width / 4,
+                            y: this.movestickBase.pos.y +
+                                this.movestickBase.img.height / 4 -
+                                this.movestickHand.img.height / 4,
+                        };
+                    }
+                    // draw joystick handle
+                    this.movestickHand.draw(this.movestickHand.img.width / 2, this.movestickHand.img.height / 2);
+                };
+                movementStick();
             }
         }
     }
