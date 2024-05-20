@@ -115,6 +115,55 @@ a {
   align-items: center;
 }
 
+#deviceContainer {
+  color: white;
+  position: absolute;
+  width: 500px;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+  background-color: #222;
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  padding: 20px;
+  height: 400px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.choiceContainer {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.choice {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #333;
+  width: 100%;
+  margin: 10px;
+  border-radius: 15px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  justify-content: space-between;
+  padding-bottom: 25px;
+  font-size: 10px;
+  transition: 0.3s;
+}
+
+.choice:hover {
+  background-color: #555;
+}
+
+.choice i {
+  font-size: 65px;
+}
+
 input {
   width: 80%;
   margin-top: 18px;
@@ -231,5 +280,19 @@ input:checked + .slider::before {
 
   img {
     width: 100%;
+  }
+}
+
+@media screen and (max-height: 500px) {
+  #deviceContainer {
+    transform: translate(-50%, -60%);
+    height: 250px;
+  }
+
+  .choice {
+    height: 100px;
+  }
+  .choice i {
+    font-size: 25px;
   }
 }

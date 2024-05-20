@@ -2,16 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"
+    />
     <link rel="stylesheet" href="style.css" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <script
+      src="https://kit.fontawesome.com/c557e85911.js"
+      crossorigin="anonymous"
+    ></script>
     <title>Realm of Riches</title>
   </head>
   <body>
     <a href="/" class="back" id="back">Back</a>
     <div class="stuff">
       <canvas id="canvas" width="800" height="450"></canvas>
-      <div id="worldContainer">
+      <div id="deviceContainer">
+        <h1>Choose Your Device</h1>
+        <p>For best experience, please choose your device.</p>
+        <div class="choiceContainer">
+          <div id="choiceComputer" class="choice">
+            <h1>Desktop</h1>
+            <i class="fa-solid fa-desktop"></i>
+          </div>
+          <div id="choiceMobile" class="choice">
+            <h1>Mobile</h1>
+            <i class="fa-solid fa-mobile"></i>
+          </div>
+        </div>
+
+        <button class="launchBtn" id="choiceConfirm">Confirm</button>
+      </div>
+      <div id="worldContainer" hidden style="display: none">
         <h2>Join a world to play Realm of Riches</h2>
         <div class="serverType" id="serverSelector">
           <h3>Public</h3>

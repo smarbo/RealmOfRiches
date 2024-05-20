@@ -2,8 +2,7 @@ make character selector
 make upgradeable tools
 add farming (fin's W idea)
 shop
-public/private servers
 game chat
-interiors
-
-MAKE AI BE HANDLED BY ONLY ONE PLAYER, SOCKET ID ASSIGNED AS HOST FOR EACH ROOM
+interiors (add kians idea)
+mobile controls (top priority)
+ - complete joystick movement

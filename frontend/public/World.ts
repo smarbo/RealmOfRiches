@@ -30,6 +30,16 @@ attackAnimation.src = "assets/attackAnimation.png";
 
 const roomButton = document.getElementById("roomButton") as HTMLButtonElement;
 const footer = document.getElementById("footer") as HTMLDivElement;
+const desktopChoice = document.getElementById(
+  "choiceComputer"
+) as HTMLDivElement;
+const mobileChoice = document.getElementById("choiceMobile") as HTMLDivElement;
+const choiceContainer = document.getElementById(
+  "deviceContainer"
+) as HTMLDivElement;
+const buttonChoice = document.getElementById(
+  "choiceConfirm"
+) as HTMLButtonElement;
 const backLink = document.getElementById("back") as HTMLAnchorElement;
 const roomInput = document.getElementById("roomInput") as HTMLInputElement;
 const userInput = document.getElementById("userInput") as HTMLInputElement;
@@ -39,6 +49,33 @@ const serverSelector = document.getElementById(
 const publicPrivate = document.getElementById(
   "publicPrivate"
 ) as HTMLInputElement;
+
+enum Choice {
+  Mobile,
+  Desktop,
+}
+
+let selected: Choice | undefined;
+
+mobileChoice.onclick = () => {
+  selected = Choice.Mobile;
+  mobileChoice.style.background = "#555";
+  desktopChoice.style.background = "#333";
+};
+desktopChoice.onclick = () => {
+  selected = Choice.Desktop;
+  desktopChoice.style.background = "#555";
+  mobileChoice.style.background = "#333";
+};
+buttonChoice.onclick = () => {
+  if (selected !== undefined) {
+    choiceContainer.style.display = "none";
+    choiceContainer.hidden = true;
+
+    worldContainer.style.display = "flex";
+    worldContainer.hidden = false;
+  }
+};
 
 publicPrivate.onchange = () => {
   if (publicPrivate.checked) {
@@ -573,6 +610,8 @@ roomButton.onclick = () => {
       userInput.value
     );
 
+    player.mobile = selected === Choice.Mobile ? true : false;
+
     player.id = socket.id;
     worldContainer.hidden = true;
     worldContainer.style.display = "none";
@@ -583,6 +622,7 @@ roomButton.onclick = () => {
 
     room = roomInput.value;
     canvas.style.display = "block";
+    window.scrollTo(0, 1);
     socket.emit("message", "Player joined.");
     if (publicPrivate.checked && roomInput.value != "") {
       socket.emit("joinWorld", room);
@@ -630,7 +670,7 @@ roomButton.onclick = () => {
     button(
       {
         x: canvas.width / 2 - Button.width / 2,
-        y: canvas.height / 2 + Button.height,
+        y: canvas.height / 2 + Button.height + 10,
       },
       "ACCEPT YOUR FATE",
       () => {

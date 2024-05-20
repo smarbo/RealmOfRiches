@@ -1,6 +1,6 @@
 import { GameObject } from "./GameObject.js";
 import { Inputs } from "./Inputs.js";
-import { Vector } from "./Vector.js";
+import { Vector, magnitude } from "./Vector.js";
 import { Inventory } from "./Inventory.js";
 import { State } from "./State.js";
 
@@ -26,6 +26,12 @@ export type Hat = {
 };
 
 export class Player extends GameObject {
+  mobile: boolean = false;
+  joystickPos: Vector;
+  joystickTouch: number | undefined;
+  joyBase: GameObject;
+  joyHand: GameObject;
+  touches: TouchList | [] = [];
   inputs: Inputs;
   lastKey: string;
   width: number;
@@ -74,6 +80,27 @@ export class Player extends GameObject {
       mouse: false,
       use: false,
     };
+    this.joyBase = new GameObject(
+      ctx,
+      { x: 25, y: 25 },
+      "assets/joystickBase.png"
+    );
+    this.joyHand = new GameObject(
+      ctx,
+      { x: 25, y: 25 },
+      "assets/joystickHandle.png"
+    );
+    this.joystickPos = {
+      x:
+        this.joyBase.pos.x +
+        this.joyBase.img.width / 4 -
+        this.joyHand.img.width / 4,
+      y:
+        this.joyBase.pos.y +
+        this.joyBase.img.height / 4 -
+        this.joyHand.img.height / 4,
+    };
+
     this.lastKey = "";
     this.frames.imgs.up.src = "assets/playerUp.png";
     this.frames.imgs.down.src = "assets/playerDown.png";
@@ -171,6 +198,41 @@ export class Player extends GameObject {
       const angle = Math.atan2(dy, dx);
       this.mouseAngle = angle;
     });
+    // handle touch on mobile
+    this.ctx.canvas.addEventListener("touchstart", (e: TouchEvent) => {
+      this.touches = e.touches;
+      this.inputs.mouse = true;
+      const touch = e.touches[e.touches.length - 1];
+      const rect = this.ctx.canvas.getBoundingClientRect();
+      this.mouseOffset.x =
+        touch.clientX - rect.left - this.ctx.canvas.width / 2;
+      this.mouseOffset.y =
+        touch.clientY - rect.top - this.ctx.canvas.height / 2;
+      // Mouse angle
+      const dx = this.mouse.x - this.pos.x;
+      const dy = this.mouse.y - this.pos.y - this.height / 4;
+      const angle = Math.atan2(dy, dx);
+      this.mouseAngle = angle;
+    });
+    this.ctx.canvas.addEventListener("touchend", (e: TouchEvent) => {
+      this.touches = e.touches;
+      this.inputs.mouse = false;
+      this.joystickTouch = undefined;
+    });
+    this.ctx.canvas.addEventListener("touchmove", (e: TouchEvent) => {
+      this.touches = e.touches;
+      const touch = e.touches[e.touches.length - 1];
+      const rect = this.ctx.canvas.getBoundingClientRect();
+      this.mouseOffset.x =
+        touch.clientX - rect.left - this.ctx.canvas.width / 2;
+      this.mouseOffset.y =
+        touch.clientY - rect.top - this.ctx.canvas.height / 2;
+      // Mouse angle
+      const dx = this.mouse.x - this.pos.x;
+      const dy = this.mouse.y - this.pos.y - this.height / 4;
+      const angle = Math.atan2(dy, dx);
+      this.mouseAngle = angle;
+    });
 
     this.hat = {
       front: new GameObject(ctx, this.pos, "assets/hatFront.png"),
@@ -185,6 +247,35 @@ export class Player extends GameObject {
   update(state: State) {
     this.mouse.x = this.pos.x + this.mouseOffset.x;
     this.mouse.y = this.pos.y + this.mouseOffset.y;
+
+    if (this.mobile) {
+      Array.from(this.touches).forEach((t) => {
+        const rect = this.ctx.canvas.getBoundingClientRect();
+        let touch: Vector;
+        let xOff = t.clientX - rect.left - this.ctx.canvas.width / 2;
+        let yOff = t.clientY - rect.top - this.ctx.canvas.height / 2;
+        touch = {
+          x: this.pos.x + xOff,
+          y: this.pos.y + yOff,
+        };
+        const joy = {
+          x:
+            this.joyBase.pos.x +
+            this.joyBase.img.width / 4 -
+            this.joyHand.img.width / 4,
+          y:
+            this.joyBase.pos.y +
+            this.joyBase.img.height / 4 -
+            this.joyHand.img.height / 4,
+        };
+
+        if (magnitude({ x: joy.x - touch.x, y: joy.y - touch.y }) < 60) {
+          this.joystickTouch = t.identifier;
+          console.log("touching");
+        }
+      });
+    }
+
     if (state !== State.Paused && state !== State.Dead) {
       if (this.inputs.up && this.lastKey === "w") {
         this.pos.y -= this.speed;
@@ -354,6 +445,68 @@ export class Player extends GameObject {
         this.pos.x + (this.energy < 100 ? 59 : 64),
         this.pos.y + this.ctx.canvas.height / 2 - 30
       );
+      // joystick
+      if (this.mobile) {
+        this.joyBase.draw(
+          this.joyBase.img.width / 2,
+          this.joyBase.img.height / 2
+        );
+        this.joyBase.pos = {
+          x: this.pos.x - this.ctx.canvas.width / 2 + 75,
+          y: this.pos.y + this.ctx.canvas.height / 2 - 124,
+        };
+        if (this.inputs.mouse && this.joystickTouch !== undefined) {
+          console.log("doing");
+          const t = Array.from(this.touches).find(
+            (t) => t.identifier === this.joystickTouch
+          )!;
+          const rect = this.ctx.canvas.getBoundingClientRect();
+          let touch: Vector;
+          let xOff = t.clientX - rect.left - this.ctx.canvas.width / 2;
+          let yOff = t.clientY - rect.top - this.ctx.canvas.height / 2;
+
+          touch = {
+            x: this.pos.x + xOff,
+            y: this.pos.y + yOff,
+          };
+          const joy = {
+            x:
+              this.joyBase.pos.x +
+              this.joyBase.img.width / 4 -
+              this.joyHand.img.width / 4,
+            y:
+              this.joyBase.pos.y +
+              this.joyBase.img.height / 4 -
+              this.joyHand.img.height / 4 -
+              10,
+          };
+
+          if (magnitude({ x: joy.x - touch.x, y: joy.y - touch.y }) > 60) {
+            const angle = Math.atan2(touch.y - joy.y, touch.x - joy.x);
+            touch.x = joy.x + Math.cos(angle) * 60;
+            touch.y = joy.y + Math.sin(angle) * 60;
+          }
+          this.joyHand.pos = {
+            x: touch.x,
+            y: touch.y + this.joyHand.img.height / 8,
+          };
+        } else {
+          this.joyHand.pos = {
+            x:
+              this.joyBase.pos.x +
+              this.joyBase.img.width / 4 -
+              this.joyHand.img.width / 4,
+            y:
+              this.joyBase.pos.y +
+              this.joyBase.img.height / 4 -
+              this.joyHand.img.height / 4,
+          };
+        }
+        this.joyHand.draw(
+          this.joyHand.img.width / 2,
+          this.joyHand.img.height / 2
+        );
+      }
     }
   }
   // draw inventory - called every frame

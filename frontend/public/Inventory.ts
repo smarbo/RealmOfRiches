@@ -38,10 +38,69 @@ export class Inventory {
         sword.attacking = true;
       }
     });
+    this.ctx.canvas.addEventListener("touchstart", () => {
+      if (
+        this.quickAccess[this.selected].item?.obj instanceof Sword &&
+        player.energy >= 1
+      ) {
+        const sword = this.quickAccess[this.selected].item?.obj as Sword;
+        sword.attacking = true;
+      }
+    });
     this.ctx.canvas.addEventListener("mouseup", () => {
       if (this.quickAccess[this.selected].item?.obj instanceof Sword) {
         const sword = this.quickAccess[this.selected].item?.obj as Sword;
         sword.attacking = false;
+      }
+    });
+    this.ctx.canvas.addEventListener("touchend", () => {
+      if (this.quickAccess[this.selected].item?.obj instanceof Sword) {
+        const sword = this.quickAccess[this.selected].item?.obj as Sword;
+        sword.attacking = false;
+      }
+    });
+    this.ctx.canvas.addEventListener("click", () => {
+      const plr = player as Player;
+      const m = plr.mouse;
+      const s = 48;
+      for (let i = 0; i < this.quickAccess.length; i++) {
+        this.tileRegular.pos.x =
+          player.pos.x - 170 + i * this.tileRegular.img.width;
+        this.tileRegular.pos.y =
+          player.pos.y +
+          this.ctx.canvas.height / 2 +
+          32 -
+          this.tileRegular.img.height;
+
+        const x = this.tileRegular.pos.x - this.tileRegular.img.width / 2;
+        const y = this.tileRegular.pos.y - this.tileRegular.img.height / 2;
+        if (m.x > x && m.x < x + s && m.y > y && m.y < y + s) {
+          this.selected = i;
+          console.log("selected");
+          break;
+        }
+      }
+    });
+    this.ctx.canvas.addEventListener("touchstart", () => {
+      const plr = player as Player;
+      const m = plr.mouse;
+      const s = 48;
+      for (let i = 0; i < this.quickAccess.length; i++) {
+        this.tileRegular.pos.x =
+          player.pos.x - 170 + i * this.tileRegular.img.width;
+        this.tileRegular.pos.y =
+          player.pos.y +
+          this.ctx.canvas.height / 2 +
+          32 -
+          this.tileRegular.img.height;
+
+        const x = this.tileRegular.pos.x - this.tileRegular.img.width / 2;
+        const y = this.tileRegular.pos.y - this.tileRegular.img.height / 2;
+        if (m.x > x && m.x < x + s && m.y > y && m.y < y + s) {
+          this.selected = i;
+          console.log("selected");
+          break;
+        }
       }
     });
     this.tileRegular = new GameObject(
