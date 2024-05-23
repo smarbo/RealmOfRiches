@@ -3,6 +3,7 @@ import { Inputs } from "./Inputs.js";
 import { Vector, magnitude } from "./Vector.js";
 import { Inventory } from "./Inventory.js";
 import { State } from "./State.js";
+import { Sword } from "./Sword.js";
 
 const cursor = new Image();
 cursor.src = "assets/cursor.png";
@@ -26,10 +27,14 @@ export type Hat = {
 };
 
 export class Player extends GameObject {
-  joystickPos: Vector;
-  joystickTouch: number | undefined;
+  movestickPos: Vector;
+  movestickTouch: number | undefined;
   movestickBase: GameObject;
   movestickHand: GameObject;
+  swordstickPos: Vector;
+  swordstickTouch: number | undefined;
+  swordstickBase: GameObject;
+  swordstickHand: GameObject;
   touches: TouchList | [] = [];
   inputs: Inputs;
   lastKey: string;
@@ -97,7 +102,17 @@ export class Player extends GameObject {
       { x: 25, y: 25 },
       "assets/joystickHandle.png"
     );
-    this.joystickPos = {
+    this.swordstickBase = new GameObject(
+      ctx,
+      { x: 25, y: 25 },
+      "assets/joystickBase.png"
+    );
+    this.swordstickHand = new GameObject(
+      ctx,
+      { x: 25, y: 25 },
+      "assets/joystickHandle.png"
+    );
+    this.movestickPos = {
       x:
         this.movestickBase.pos.x +
         this.movestickBase.img.width / 4 -
@@ -106,6 +121,16 @@ export class Player extends GameObject {
         this.movestickBase.pos.y +
         this.movestickBase.img.height / 4 -
         this.movestickHand.img.height / 4,
+    };
+    this.swordstickPos = {
+      x:
+        this.swordstickBase.pos.x +
+        this.swordstickBase.img.width / 4 -
+        this.swordstickHand.img.width / 4,
+      y:
+        this.swordstickBase.pos.y +
+        this.swordstickBase.img.height / 4 -
+        this.swordstickHand.img.height / 4,
     };
 
     this.lastKey = "";
@@ -225,9 +250,25 @@ export class Player extends GameObject {
       this.mouseAngle = angle;
     });
     this.ctx.canvas.addEventListener("touchend", (e: TouchEvent) => {
-      this.touches = e.touches;
+      this.touches = e.targetTouches;
       this.inputs.mouse = false;
-      this.joystickTouch = undefined;
+      if (this.movestickTouch !== undefined) {
+        const endedTouch = Array.from(e.targetTouches).find(
+          (t) => t.identifier === this.movestickTouch
+        );
+        if (endedTouch === undefined) {
+          this.movestickTouch = undefined;
+        }
+      }
+
+      if (this.swordstickTouch !== undefined) {
+        const endedTouch = Array.from(e.targetTouches).find(
+          (t) => t.identifier === this.swordstickTouch
+        );
+        if (endedTouch === undefined) {
+          this.swordstickTouch = undefined;
+        }
+      }
     });
     this.ctx.canvas.addEventListener("touchmove", (e: TouchEvent) => {
       this.touches = e.touches;
@@ -237,11 +278,6 @@ export class Player extends GameObject {
         touch.clientX - rect.left - this.ctx.canvas.width / 2;
       this.mouseOffset.y =
         touch.clientY - rect.top - this.ctx.canvas.height / 2;
-      // Mouse angle
-      const dx = this.mouse.x - this.pos.x;
-      const dy = this.mouse.y - this.pos.y - this.height / 4;
-      const angle = Math.atan2(dy, dx);
-      this.mouseAngle = angle;
     });
 
     this.hat = {
@@ -268,7 +304,7 @@ export class Player extends GameObject {
           x: this.pos.x + xOff,
           y: this.pos.y + yOff,
         };
-        const joy = {
+        const joyMove = {
           x:
             this.movestickBase.pos.x +
             this.movestickBase.img.width / 4 -
@@ -278,9 +314,25 @@ export class Player extends GameObject {
             this.movestickBase.img.height / 4 -
             this.movestickHand.img.height / 4,
         };
+        const joySword = {
+          x:
+            this.swordstickBase.pos.x +
+            this.swordstickBase.img.width / 4 -
+            this.swordstickHand.img.width / 4,
+          y:
+            this.swordstickBase.pos.y +
+            this.swordstickBase.img.height / 4 -
+            this.swordstickHand.img.height / 4,
+        };
 
-        if (magnitude({ x: joy.x - touch.x, y: joy.y - touch.y }) < 60) {
-          this.joystickTouch = t.identifier;
+        if (
+          magnitude({ x: joyMove.x - touch.x, y: joyMove.y - touch.y }) < 60
+        ) {
+          this.movestickTouch = t.identifier;
+        } else if (
+          magnitude({ x: joySword.x - touch.x, y: joySword.y - touch.y }) < 60
+        ) {
+          this.swordstickTouch = t.identifier;
         }
       });
     }
@@ -456,6 +508,7 @@ export class Player extends GameObject {
       );
       // joystick
       if (this.mobile) {
+        const selected = this.inventory.quickAccess[this.inventory.selected];
         const movementStick = () => {
           this.movestickBase.draw(
             this.movestickBase.img.width / 2,
@@ -473,9 +526,9 @@ export class Player extends GameObject {
             this.moving = false;
           };
           // touching joystick
-          if (this.inputs.mouse && this.joystickTouch !== undefined) {
+          if (this.inputs.mouse && this.movestickTouch !== undefined) {
             const t = Array.from(this.touches).find(
-              (t) => t.identifier === this.joystickTouch
+              (t) => t.identifier === this.movestickTouch
             )!;
             const rect = this.ctx.canvas.getBoundingClientRect();
             let touch: Vector;
@@ -541,7 +594,7 @@ export class Player extends GameObject {
                 this.pos.y += this.speed;
               }
               if (this.lastKey === "d") {
-                this.pos.x += this.speed;
+                this.pos.x -= this.speed;
               }
               reset();
               this.inputs.left = true;
@@ -588,6 +641,75 @@ export class Player extends GameObject {
             this.movestickHand.img.height / 2
           );
         };
+        const swordStick = () => {
+          this.swordstickBase.draw(
+            this.swordstickBase.img.width / 2,
+            this.swordstickBase.img.height / 2
+          );
+          this.swordstickBase.pos = {
+            x:
+              this.pos.x +
+              this.ctx.canvas.width / 2 -
+              this.swordstickBase.img.width / 2 -
+              35,
+            y: this.pos.y + this.ctx.canvas.height / 2 - 124,
+          };
+          if (this.inputs.mouse && this.swordstickTouch !== undefined) {
+            const t = Array.from(this.touches).find(
+              (t) => t.identifier === this.swordstickTouch
+            )!;
+            const rect = this.ctx.canvas.getBoundingClientRect();
+            let touch: Vector;
+            let xOff = t.clientX - rect.left - this.ctx.canvas.width / 2;
+            let yOff = t.clientY - rect.top - this.ctx.canvas.height / 2;
+
+            touch = {
+              x: this.pos.x + xOff,
+              y: this.pos.y + yOff,
+            };
+            const joy = {
+              x:
+                this.swordstickBase.pos.x +
+                this.swordstickBase.img.width / 4 -
+                this.swordstickHand.img.width / 4,
+              y:
+                this.swordstickBase.pos.y +
+                this.swordstickBase.img.height / 4 -
+                this.swordstickHand.img.height / 4 -
+                10,
+            };
+            const angle = Math.atan2(touch.y - joy.y, touch.x - joy.x);
+            this.inventory.quickAccess.forEach((i) => {
+              this.mouseAngle = angle;
+            });
+
+            if (magnitude({ x: joy.x - touch.x, y: joy.y - touch.y }) > 60) {
+              touch.x = joy.x + Math.cos(angle) * 60;
+              touch.y = joy.y + Math.sin(angle) * 60;
+            }
+
+            this.swordstickHand.pos = {
+              x: touch.x,
+              y: touch.y + this.swordstickHand.img.height / 8,
+            };
+          } else {
+            this.swordstickHand.pos = {
+              x:
+                this.swordstickBase.pos.x +
+                this.swordstickBase.img.width / 4 -
+                this.swordstickHand.img.width / 4,
+              y:
+                this.swordstickBase.pos.y +
+                this.swordstickBase.img.height / 4 -
+                this.swordstickHand.img.height / 4,
+            };
+          }
+          this.swordstickHand.draw(
+            this.swordstickHand.img.width / 2,
+            this.swordstickHand.img.height / 2
+          );
+        };
+        swordStick();
         movementStick();
       }
     }

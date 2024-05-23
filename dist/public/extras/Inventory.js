@@ -126,15 +126,27 @@ export class Inventory {
                     y: player.mouse.y - player.pos.y,
                 };
                 let d = magnitude(dv);
-                if (d > selectedSlot.item.obj.reach) {
-                    dv.x = (dv.x / d) * selectedSlot.item.obj.reach;
-                    dv.y = (dv.y / d) * selectedSlot.item.obj.reach;
-                    pos.x = player.pos.x + dv.x + player.width / 2;
-                    pos.y = player.pos.y + dv.y + player.height / 2;
+                if (!player.mobile) {
+                    if (d > selectedSlot.item.obj.reach) {
+                        dv.x = (dv.x / d) * selectedSlot.item.obj.reach;
+                        dv.y = (dv.y / d) * selectedSlot.item.obj.reach;
+                        pos.x = player.pos.x + dv.x + player.width / 2;
+                        pos.y = player.pos.y + dv.y + player.height / 2;
+                    }
+                    else {
+                        pos.x = player.mouse.x + player.width / 2;
+                        pos.y = player.mouse.y + player.height / 2;
+                    }
                 }
                 else {
-                    pos.x = player.mouse.x + player.width / 2;
-                    pos.y = player.mouse.y + player.height / 2;
+                    pos = {
+                        x: player.pos.x +
+                            player.width / 2 +
+                            Math.cos(player.mouseAngle) * selectedSlot.item.obj.reach,
+                        y: player.pos.y +
+                            player.height / 2 +
+                            Math.sin(player.mouseAngle) * selectedSlot.item.obj.reach,
+                    };
                 }
                 selectedSlot.item.obj.update(pos, player.mouseAngle + (45 * Math.PI) / 180);
                 if (selectedSlot.item.obj.attacking) {
