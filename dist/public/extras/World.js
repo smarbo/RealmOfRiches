@@ -487,8 +487,8 @@ function handleState(timestamp) {
 }
 //* Join lobby button - start game
 roomButton.onclick = () => {
-    canvas.width = screen.width;
-    canvas.height = screen.height;
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
     if (userInput.value != "") {
         player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", spawnEnemy, 4, selected === Choice.Mobile ? true : false, {
             max: 4,

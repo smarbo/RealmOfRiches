@@ -412,6 +412,7 @@ export class Player extends GameObject {
   }
   // draw player - called every frame
   draw(state: State) {
+    this.ctx.imageSmoothingEnabled = false;
     this.ctx.drawImage(
       this.img,
       this.width * this.frames.val,

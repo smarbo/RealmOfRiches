@@ -3,7 +3,7 @@ import { Item, ItemTypes, Items } from "./Item.js";
 import { OtherPlayer } from "./OtherPlayer.js";
 import { Player } from "./Player.js";
 import { Sword } from "./Sword.js";
-import { Vector, magnitude } from "./Vector.js";
+import { Vector, magnitude, rotateVector } from "./Vector.js";
 
 export class InvSlot {
   constructor(public ctx: CanvasRenderingContext2D, public item?: Item) {}
@@ -39,12 +39,15 @@ export class Inventory {
       }
     });
     this.ctx.canvas.addEventListener("touchstart", () => {
-      if (
-        this.quickAccess[this.selected].item?.obj instanceof Sword &&
-        player.energy >= 1
-      ) {
-        const sword = this.quickAccess[this.selected].item?.obj as Sword;
-        sword.attacking = true;
+      if (player instanceof Player) {
+        if (
+          this.quickAccess[this.selected].item?.obj instanceof Sword &&
+          player.energy >= 1
+        ) {
+          console.log(player.swordstickTouch);
+          const sword = this.quickAccess[this.selected].item?.obj as Sword;
+          sword.attacking = true;
+        }
       }
     });
     this.ctx.canvas.addEventListener("mouseup", () => {
@@ -134,6 +137,7 @@ export class Inventory {
   }
 
   draw(player: Player) {
+    this.ctx.imageSmoothingEnabled = false;
     const selectedSlot = this.quickAccess[this.selected];
     if (selectedSlot.item) {
       if (selectedSlot.item.obj instanceof Sword) {

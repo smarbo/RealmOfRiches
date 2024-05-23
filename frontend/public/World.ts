@@ -621,8 +621,8 @@ function handleState(timestamp: number) {
 
 //* Join lobby button - start game
 roomButton.onclick = () => {
-  canvas.width = screen.width;
-  canvas.height = screen.height;
+  canvas.width = document.documentElement.clientWidth;
+  canvas.height = document.documentElement.clientHeight;
   if (userInput.value != "") {
     player = new Player(
       ctx,

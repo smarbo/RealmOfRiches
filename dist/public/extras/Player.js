@@ -349,6 +349,7 @@ export class Player extends GameObject {
     }
     // draw player - called every frame
     draw(state) {
+        this.ctx.imageSmoothingEnabled = false;
         this.ctx.drawImage(this.img, this.width * this.frames.val, 0, this.img.width / this.frames.max, this.img.height, this.pos.x, this.pos.y, this.img.width / this.frames.max, this.img.height);
         if (state !== State.Paused && state !== State.Dead) {
             switch (this.lastKey) {
