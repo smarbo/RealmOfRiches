@@ -19,8 +19,8 @@ let state: State = State.Idle;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 canvas.style.display = "none";
-canvas.width = document.documentElement.clientWidth;
-canvas.height = document.documentElement.clientHeight;
+canvas.width = screen.width;
+canvas.height = screen.height;
 
 const cursorImg = new Image();
 cursorImg.src = "assets/cursor.png";
@@ -621,6 +621,8 @@ function handleState(timestamp: number) {
 
 //* Join lobby button - start game
 roomButton.onclick = () => {
+  canvas.width = screen.width;
+  canvas.height = screen.height;
   if (userInput.value != "") {
     player = new Player(
       ctx,
