@@ -32,7 +32,7 @@ const apihandler_1 = __importDefault(require("./apihandler"));
 const pub = path_1.default.join(__dirname, "..", "public");
 const router = (0, express_1.Router)();
 router.use(express_1.default.json());
-require("dotenv");
+require("dotenv").config();
 const User = require("./models/userModel.js");
 require("./db.js");
 const bcrypt = require("bcryptjs");

@@ -8,7 +8,7 @@ const pub = path.join(__dirname, "..", "public");
 const router = Router();
 router.use(express.json());
 
-require("dotenv");
+require("dotenv").config();
 const User: Model<IUser> = require("./models/userModel.js");
 require("./db.js");
 const bcrypt = require("bcryptjs");
