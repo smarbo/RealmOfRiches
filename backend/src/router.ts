@@ -11,7 +11,7 @@ router.use(express.json());
 require("dotenv");
 const User: Model<IUser> = require("./models/userModel.js");
 require("./db.js");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // PAGES ROUTER
 const GET = (uri: string, name: string) => {

@@ -45,7 +45,7 @@
             "lastUpdate"
           ).innerHTML = `Last Update: <a href='${res[0].html_url}'>'${
             res[0].commit.message
-          }'</a> at ${date.slice(8, 10)}rd ${
+          }'</a> on ${date.slice(8, 10)} ${
             months[Number(date.slice(5, 7)) - 1]
           } ${date.slice(0, 4)}`;
         });
