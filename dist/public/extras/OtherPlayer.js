@@ -56,6 +56,7 @@ export class OtherPlayer extends GameObject {
         };
     }
     draw() {
+        this.ctx.imageSmoothingEnabled = false;
         this.ctx.drawImage(this.img, this.width * this.frames.val, 0, this.img.width / this.frames.max, this.img.height, this.pos.x, this.pos.y, this.img.width / this.frames.max, this.img.height);
         this.ctx.font = "bold 20px arial";
         this.ctx.lineWidth = 800;
@@ -66,6 +67,7 @@ export class OtherPlayer extends GameObject {
         this.ctx.fillText(this.username, this.pos.x + 23, this.pos.y);
     }
     drawHat() {
+        this.ctx.imageSmoothingEnabled = false;
         switch (this.lastKey) {
             case "w":
                 this.hat.back.draw(64, 64);

@@ -13,6 +13,7 @@ export class GameObject {
   }
 
   draw(width?: number, height?: number) {
+    this.ctx.imageSmoothingEnabled = false;
     if (width && height) {
       this.ctx.drawImage(this.img, this.pos.x, this.pos.y, width, height);
     } else {

@@ -63,6 +63,17 @@ io.on("connection", (socket) => {
         }
         roomsEnemies[room].push(e.id);
     });
+    socket.on("routineSpawn", (e) => {
+        let room = Array.from(socket.rooms).filter((r) => r != socket.id)[0];
+        if (roomHosts[room] === socket.id) {
+            console.log(`[ROOM.${room}]: ENEMY ROUTINE SPAWNED`);
+            socket.broadcast.to(room).emit("enemySpawn", e);
+            if (!roomsEnemies[room]) {
+                roomsEnemies[room] = [];
+            }
+            roomsEnemies[room].push(e.id);
+        }
+    });
     socket.on("enemyUpdate", (e) => {
         let room = Array.from(socket.rooms).filter((r) => r != socket.id)[0];
         if (roomHosts[room] === socket.id) {
@@ -91,7 +102,11 @@ io.on("connection", (socket) => {
             socket.emit("roomPlayers", Array.from(roomData).filter((id) => id !== socket.id));
             if (Array.from(roomData).filter((id) => id !== socket.id).length < 1) {
                 roomHosts[room] = socket.id;
+                socket.emit("isHost", true);
                 console.log(`${socket.id} is now the host of ${room}`);
+            }
+            else {
+                socket.emit("isHost", false);
             }
         }
         if (roomsEnemies[room]) {
@@ -122,11 +137,16 @@ io.on("connection", (socket) => {
         if (roomData) {
             if (Array.from(roomData).length === 1) {
                 roomsEnemies[room] = [];
+                delete roomHosts[room];
+            }
+            else if (Array.from(roomData).length > 1) {
+                roomHosts[room] = Array.from(roomData)[1];
             }
         }
         socket.broadcast
             .to(Array.from(socket.rooms).filter((r) => r != socket.id)[0])
             .emit("playerLeave", socket.id);
+        socket.to(roomHosts[room]).emit("isHost", true);
     });
     socket.on("disconnect", () => {
         console.log(`[SOCKET.${socket.id}]: Disconnected`);

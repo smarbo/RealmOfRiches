@@ -115,13 +115,18 @@ let players = {};
 let playersList = [];
 let enemiesId = [];
 let enemies = {};
-function spawnEnemy(pos) {
-    let skele = new Skeleton(ctx, pos, "assets/skeleDown.png", 3.5);
-    enemiesId.push(skele.id);
-    enemies[skele.id] = skele;
-    socket.emit("enemySpawn", skele);
+function routineSpawn(pos) {
+    if (player.host) {
+        let skele = new Skeleton(ctx, pos, "assets/skeleDown.png", 3.5);
+        enemiesId.push(skele.id);
+        enemies[skele.id] = skele;
+        socket.emit("routineSpawn", skele);
+    }
 }
 //* SOCKET CONNECTIONS & UPDATES
+socket.on("isHost", (h) => {
+    player.host = h;
+});
 socket.on("playerUpdate", (plr) => {
     let img = "";
     switch (plr.lastKey) {
@@ -490,7 +495,7 @@ roomButton.onclick = () => {
     canvas.width = document.documentElement.clientWidth;
     canvas.height = document.documentElement.clientHeight;
     if (userInput.value != "") {
-        player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", spawnEnemy, 4, selected === Choice.Mobile ? true : false, {
+        player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", routineSpawn, 4, selected === Choice.Mobile ? true : false, {
             max: 4,
             val: 0,
             tick: 0,

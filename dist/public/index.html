@@ -9,6 +9,7 @@
   </head>
   <body>
     <div class="stuff">
+      <div id="lastUpdate">Loading last update</div>
       <div class="welcome">
         <img src="assets/rorBanner.jpg" width="400" draggable="false" />
         <a href="play"><button class="launchBtn">Launch</button></a>
@@ -18,5 +19,36 @@
         <h2><a href="https://github.com/smarbo">Eddie Obrams</a> 2024</h2>
       </footer>
     </div>
+
+    <script>
+      const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      fetch(
+        "https://api.github.com/repos/smarbo/realmofriches/commits?per_page=1"
+      )
+        .then((res) => res.json())
+        .then((res) => {
+          const date = String(res[0].commit.committer.date);
+          document.getElementById(
+            "lastUpdate"
+          ).innerHTML = `Last Update: <a href='${res[0].html_url}'>'${
+            res[0].commit.message
+          }'</a> at ${date.slice(8, 10)}rd ${
+            months[Number(date.slice(5, 7)) - 1]
+          } ${date.slice(0, 4)}`;
+        });
+    </script>
   </body>
 </html>

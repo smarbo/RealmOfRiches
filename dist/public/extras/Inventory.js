@@ -1,6 +1,5 @@
 import { GameObject } from "./GameObject.js";
 import { Item } from "./Item.js";
-import { Player } from "./Player.js";
 import { Sword } from "./Sword.js";
 import { magnitude } from "./Vector.js";
 export class InvSlot {
@@ -37,23 +36,7 @@ export class Inventory {
                 sword.attacking = true;
             }
         });
-        this.ctx.canvas.addEventListener("touchstart", () => {
-            if (player instanceof Player) {
-                if (this.quickAccess[this.selected].item?.obj instanceof Sword &&
-                    player.energy >= 1) {
-                    console.log(player.swordstickTouch);
-                    const sword = this.quickAccess[this.selected].item?.obj;
-                    sword.attacking = true;
-                }
-            }
-        });
         this.ctx.canvas.addEventListener("mouseup", () => {
-            if (this.quickAccess[this.selected].item?.obj instanceof Sword) {
-                const sword = this.quickAccess[this.selected].item?.obj;
-                sword.attacking = false;
-            }
-        });
-        this.ctx.canvas.addEventListener("touchend", () => {
             if (this.quickAccess[this.selected].item?.obj instanceof Sword) {
                 const sword = this.quickAccess[this.selected].item?.obj;
                 sword.attacking = false;
@@ -75,7 +58,6 @@ export class Inventory {
                 const y = this.tileRegular.pos.y - this.tileRegular.img.height / 2;
                 if (m.x > x && m.x < x + s && m.y > y && m.y < y + s) {
                     this.selected = i;
-                    console.log("selected");
                     break;
                 }
             }
@@ -96,7 +78,6 @@ export class Inventory {
                 const y = this.tileRegular.pos.y - this.tileRegular.img.height / 2;
                 if (m.x > x && m.x < x + s && m.y > y && m.y < y + s) {
                     this.selected = i;
-                    console.log("selected");
                     break;
                 }
             }

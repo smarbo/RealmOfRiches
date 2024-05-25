@@ -74,6 +74,7 @@ export class OtherPlayer extends GameObject {
     };
   }
   draw() {
+    this.ctx.imageSmoothingEnabled = false;
     this.ctx.drawImage(
       this.img,
       this.width * this.frames.val,
@@ -96,6 +97,7 @@ export class OtherPlayer extends GameObject {
   }
 
   drawHat() {
+    this.ctx.imageSmoothingEnabled = false;
     switch (this.lastKey) {
       case "w":
         this.hat.back.draw(64, 64);

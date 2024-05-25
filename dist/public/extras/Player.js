@@ -2,10 +2,11 @@ import { GameObject } from "./GameObject.js";
 import { magnitude } from "./Vector.js";
 import { Inventory } from "./Inventory.js";
 import { State } from "./State.js";
+import { Sword } from "./Sword.js";
 const cursor = new Image();
 cursor.src = "assets/cursor.png";
 export class Player extends GameObject {
-    spawnEnemy;
+    routineSpawn;
     speed;
     mobile;
     frames;
@@ -36,8 +37,9 @@ export class Player extends GameObject {
     inventory;
     grabbing = false;
     hat;
+    host = false;
     colliding = { up: false, down: false, left: false, right: false };
-    constructor(ctx, pos, img, spawnEnemy, speed, mobile, frames = {
+    constructor(ctx, pos, img, routineSpawn, speed, mobile, frames = {
         max: 4,
         val: 0,
         tick: 0,
@@ -49,7 +51,7 @@ export class Player extends GameObject {
         },
     }, username) {
         super(ctx, pos, img);
-        this.spawnEnemy = spawnEnemy;
+        this.routineSpawn = routineSpawn;
         this.speed = speed;
         this.mobile = mobile;
         this.frames = frames;
@@ -176,6 +178,9 @@ export class Player extends GameObject {
         window.addEventListener("mouseup", () => {
             this.inputs.mouse = false;
         });
+        setInterval(() => {
+            routineSpawn({ x: 2135, y: 1720 });
+        }, 5000);
         this.ctx.canvas.addEventListener("mousemove", (e) => {
             // Mouse offset
             const rect = this.ctx.canvas.getBoundingClientRect();
@@ -204,20 +209,51 @@ export class Player extends GameObject {
             this.mouseAngle = angle;
         });
         this.ctx.canvas.addEventListener("touchend", (e) => {
-            this.touches = e.targetTouches;
-            this.inputs.mouse = false;
+            this.touches = e.touches;
+            if (this.touches.length < 1)
+                this.inputs.mouse = false;
             if (this.movestickTouch !== undefined) {
-                const endedTouch = Array.from(e.targetTouches).find((t) => t.identifier === this.movestickTouch);
-                if (endedTouch === undefined) {
+                if (e.changedTouches[0].identifier === this.movestickTouch) {
                     this.movestickTouch = undefined;
                 }
             }
             if (this.swordstickTouch !== undefined) {
-                const endedTouch = Array.from(e.targetTouches).find((t) => t.identifier === this.swordstickTouch);
-                if (endedTouch === undefined) {
+                if (e.changedTouches[0].identifier === this.swordstickTouch) {
                     this.swordstickTouch = undefined;
                 }
             }
+            Array.from(this.touches).forEach((t) => {
+                const rect = this.ctx.canvas.getBoundingClientRect();
+                let touch;
+                let xOff = t.clientX - rect.left - this.ctx.canvas.width / 2;
+                let yOff = t.clientY - rect.top - this.ctx.canvas.height / 2;
+                touch = {
+                    x: this.pos.x + xOff,
+                    y: this.pos.y + yOff,
+                };
+                const joyMove = {
+                    x: this.movestickBase.pos.x +
+                        this.movestickBase.img.width / 4 -
+                        this.movestickHand.img.width / 4,
+                    y: this.movestickBase.pos.y +
+                        this.movestickBase.img.height / 4 -
+                        this.movestickHand.img.height / 4,
+                };
+                const joySword = {
+                    x: this.swordstickBase.pos.x +
+                        this.swordstickBase.img.width / 4 -
+                        this.swordstickHand.img.width / 4,
+                    y: this.swordstickBase.pos.y +
+                        this.swordstickBase.img.height / 4 -
+                        this.swordstickHand.img.height / 4,
+                };
+                if (magnitude({ x: joyMove.x - touch.x, y: joyMove.y - touch.y }) < 60) {
+                    this.movestickTouch = t.identifier;
+                }
+                else if (magnitude({ x: joySword.x - touch.x, y: joySword.y - touch.y }) < 60) {
+                    this.swordstickTouch = t.identifier;
+                }
+            });
         });
         this.ctx.canvas.addEventListener("touchmove", (e) => {
             this.touches = e.touches;
@@ -227,6 +263,38 @@ export class Player extends GameObject {
                 touch.clientX - rect.left - this.ctx.canvas.width / 2;
             this.mouseOffset.y =
                 touch.clientY - rect.top - this.ctx.canvas.height / 2;
+            Array.from(this.touches).forEach((t) => {
+                const rect = this.ctx.canvas.getBoundingClientRect();
+                let touch;
+                let xOff = t.clientX - rect.left - this.ctx.canvas.width / 2;
+                let yOff = t.clientY - rect.top - this.ctx.canvas.height / 2;
+                touch = {
+                    x: this.pos.x + xOff,
+                    y: this.pos.y + yOff,
+                };
+                const joyMove = {
+                    x: this.movestickBase.pos.x +
+                        this.movestickBase.img.width / 4 -
+                        this.movestickHand.img.width / 4,
+                    y: this.movestickBase.pos.y +
+                        this.movestickBase.img.height / 4 -
+                        this.movestickHand.img.height / 4,
+                };
+                const joySword = {
+                    x: this.swordstickBase.pos.x +
+                        this.swordstickBase.img.width / 4 -
+                        this.swordstickHand.img.width / 4,
+                    y: this.swordstickBase.pos.y +
+                        this.swordstickBase.img.height / 4 -
+                        this.swordstickHand.img.height / 4,
+                };
+                if (magnitude({ x: joyMove.x - touch.x, y: joyMove.y - touch.y }) < 60) {
+                    this.movestickTouch = t.identifier;
+                }
+                else if (magnitude({ x: joySword.x - touch.x, y: joySword.y - touch.y }) < 60) {
+                    this.swordstickTouch = t.identifier;
+                }
+            });
         });
         this.hat = {
             front: new GameObject(ctx, this.pos, "assets/hatFront.png"),
@@ -292,7 +360,7 @@ export class Player extends GameObject {
                 this.img = this.frames.imgs.right;
             }
             if (this.inputs.interact) {
-                this.spawnEnemy({ x: 2135, y: 1720 });
+                // this.spawnEnemy({x:1720, y: 2135});
                 this.inputs.interact = false;
                 this.grabbing = true;
             }
@@ -530,6 +598,12 @@ export class Player extends GameObject {
                         y: this.pos.y + this.ctx.canvas.height / 2 - 124,
                     };
                     if (this.inputs.mouse && this.swordstickTouch !== undefined) {
+                        const slot = this.inventory.quickAccess[this.inventory.selected];
+                        if (slot.item &&
+                            slot.item.obj instanceof Sword &&
+                            this.energy >= 1) {
+                            slot.item.obj.attacking = true;
+                        }
                         const t = Array.from(this.touches).find((t) => t.identifier === this.swordstickTouch);
                         const rect = this.ctx.canvas.getBoundingClientRect();
                         let touch;
@@ -562,6 +636,10 @@ export class Player extends GameObject {
                         };
                     }
                     else {
+                        const slot = this.inventory.quickAccess[this.inventory.selected];
+                        if (slot.item && slot.item.obj instanceof Sword) {
+                            slot.item.obj.attacking = false;
+                        }
                         this.swordstickHand.pos = {
                             x: this.swordstickBase.pos.x +
                                 this.swordstickBase.img.width / 4 -

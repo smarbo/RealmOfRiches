@@ -142,32 +142,33 @@ export class Skeleton extends GameObject {
           20
         );
       */
-        if (this.crumbs.list[0] && magnitude(pd) > this.attackRadius) {
-            const crumb = this.crumbs.list[0];
-            const cd = {
-                x: crumb.x - this.pos.x,
-                y: crumb.y - this.pos.y,
-            };
-            if (cd.x > this.crumbRadius) {
-                this.direction = Direction.Right;
-            }
-            else if (cd.x < -this.crumbRadius) {
-                this.direction = Direction.Left;
-            }
-            else if (cd.y > this.crumbRadius) {
-                this.direction = Direction.Down;
-            }
-            else if (cd.y < -this.crumbRadius) {
-                this.direction = Direction.Up;
+        if (this.crumbs.list[0])
+            if (magnitude(pd) > this.attackRadius) {
+                const crumb = this.crumbs.list[0];
+                const cd = {
+                    x: crumb.x - this.pos.x,
+                    y: crumb.y - this.pos.y,
+                };
+                if (cd.x > this.crumbRadius) {
+                    this.direction = Direction.Right;
+                }
+                else if (cd.x < -this.crumbRadius) {
+                    this.direction = Direction.Left;
+                }
+                else if (cd.y > this.crumbRadius) {
+                    this.direction = Direction.Down;
+                }
+                else if (cd.y < -this.crumbRadius) {
+                    this.direction = Direction.Up;
+                }
+                else {
+                    this.direction = Direction.None;
+                }
             }
             else {
                 this.direction = Direction.None;
+                this.attacking = true;
             }
-        }
-        else {
-            this.direction = Direction.None;
-            this.attacking = true;
-        }
     }
     draw() {
         if (!this.attacking) {
