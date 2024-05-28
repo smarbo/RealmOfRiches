@@ -6,8 +6,8 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"
     />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <script
       src="https://kit.fontawesome.com/c557e85911.js"
       crossorigin="anonymous"
@@ -53,13 +53,7 @@
           autocapitalize="off"
           disabled
         />
-        <input
-          type="text"
-          id="userInput"
-          placeholder="Username"
-          autocomplete="off"
-          autocapitalize="off"
-        />
+        <h1 id="usernameLabel">You are joining as Eddie</h1>
         <button id="roomButton" class="launchBtn">Join</button>
       </div>
       <footer id="footer">
@@ -70,9 +64,9 @@
       </footer>
     </div>
 
-    <script src="assets/data/collisions.js"></script>
-    <script src="socket.io/socket.io.js"></script>
-    <script src="World.js" type="module"></script>
+    <script src="/assets/data/collisions.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/World.js" type="module"></script>
     <script>
       const socket = io();
     </script>
@@ -81,5 +75,6 @@
         e.preventDefault();
       });
     </script>
+    <script src="/Navbar.js"></script>
   </body>
 </html>

@@ -3,23 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <script
+      src="https://kit.fontawesome.com/c557e85911.js"
+      crossorigin="anonymous"
+    ></script>
     <title>Realm of Riches</title>
   </head>
   <body>
     <div class="stuff">
       <div class="authForm">
-        <img src="assets/rorBanner.jpg" width="400" draggable="false" />
-        <input type="text" class="authInput" placeholder="Username" />
-        <input type="text" class="authInput" placeholder="Email" />
-        <input type="text" class="authInput" placeholder="Password" />
-        <button class="launchBtn">Confirm</button>
+        <h1 id="authTitle">SIGN UP</h1>
+        <img
+          src="/assets/rorBanner.jpg"
+          class="authImage"
+          width="350"
+          draggable="false"
+        />
+        <form id="auth">
+          <input
+            type="text"
+            class="authInput"
+            placeholder="Username"
+            id="username"
+          />
+          <input class="authInput" placeholder="Email" type="text" id="email" />
+          <input
+            class="authInput"
+            placeholder="Password"
+            type="password"
+            id="password"
+          />
+          <button type="submit" class="launchBtn">Confirm</button>
+        </form>
+        <h1 id="swapForm">Already have an account?</h1>
       </div>
 
       <footer>
         <h2><a href="https://github.com/smarbo">Eddie Obrams</a> 2024</h2>
       </footer>
     </div>
+    <script src="/Navbar.js"></script>
+    <script src="/AuthController.js"></script>
   </body>
 </html>

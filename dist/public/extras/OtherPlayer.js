@@ -29,16 +29,16 @@ export class OtherPlayer extends GameObject {
         this.username = username;
         this.inventory = new Inventory(ctx, this);
         this.lastKey = "";
-        this.frames.imgs.up.src = "assets/playerUp.png";
-        this.frames.imgs.down.src = "assets/playerDown.png";
-        this.frames.imgs.left.src = "assets/playerLeft.png";
-        this.frames.imgs.right.src = "assets/playerRight.png";
+        this.frames.imgs.up.src = "/assets/playerUp.png";
+        this.frames.imgs.down.src = "/assets/playerDown.png";
+        this.frames.imgs.left.src = "/assets/playerLeft.png";
+        this.frames.imgs.right.src = "/assets/playerRight.png";
         this.width = OtherPlayer.width;
         this.height = OtherPlayer.height;
         this.hat = {
-            front: new GameObject(ctx, this.pos, "assets/hatFront.png"),
-            side: new GameObject(ctx, this.pos, "assets/hatSide.png"),
-            back: new GameObject(ctx, this.pos, "assets/hatBack.png"),
+            front: new GameObject(ctx, this.pos, "/assets/hatFront.png"),
+            side: new GameObject(ctx, this.pos, "/assets/hatSide.png"),
+            back: new GameObject(ctx, this.pos, "/assets/hatBack.png"),
         };
     }
     animate() {

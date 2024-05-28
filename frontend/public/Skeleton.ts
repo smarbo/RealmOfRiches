@@ -67,11 +67,11 @@ export class Skeleton extends GameObject {
     }
   ) {
     super(ctx, pos, img);
-    this.frames.imgs.up.src = "assets/skeleUp.png";
-    this.frames.imgs.left.src = "assets/skeleLeft.png";
-    this.frames.imgs.down.src = "assets/skeleDown.png";
-    this.frames.imgs.right.src = "assets/skeleRight.png";
-    this.aframes.sheet.src = "assets/skeleAttack.png";
+    this.frames.imgs.up.src = "/assets/skeleUp.png";
+    this.frames.imgs.left.src = "/assets/skeleLeft.png";
+    this.frames.imgs.down.src = "/assets/skeleDown.png";
+    this.frames.imgs.right.src = "/assets/skeleRight.png";
+    this.aframes.sheet.src = "/assets/skeleAttack.png";
     this.width = Skeleton.width;
     this.height = Skeleton.height;
   }

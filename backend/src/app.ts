@@ -6,6 +6,9 @@ const app: Express = express();
 const server: http.Server = http.createServer(app);
 const io: Server = require("socket.io")(server);
 const router = require("./router");
+const apiRouter = require("./apiRouter");
+const cookieParser = require("cookie-parser");
+require("./DropReset.js");
 import path from "path";
 
 const pub = path.join(__dirname, "..", "public");
@@ -13,7 +16,10 @@ console.log(pub);
 const port = 3000;
 
 app.use(express.static(path.join(pub, "extras")));
+app.use(express.json());
+app.use(cookieParser());
 
+app.use("/api", apiRouter);
 app.use(router);
 app.use((req: Request, res: Response, next) => {
   res.status(404);

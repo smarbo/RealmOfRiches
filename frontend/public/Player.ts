@@ -6,7 +6,7 @@ import { State } from "./State.js";
 import { Sword } from "./Sword.js";
 
 const cursor = new Image();
-cursor.src = "assets/cursor.png";
+cursor.src = "/assets/cursor.png";
 
 export type EntityFrames = {
   max: number;
@@ -96,22 +96,22 @@ export class Player extends GameObject {
     this.movestickBase = new GameObject(
       ctx,
       { x: 25, y: 25 },
-      "assets/joystickBase.png"
+      "/assets/joystickBase.png"
     );
     this.movestickHand = new GameObject(
       ctx,
       { x: 25, y: 25 },
-      "assets/joystickHandle.png"
+      "/assets/joystickHandle.png"
     );
     this.swordstickBase = new GameObject(
       ctx,
       { x: 25, y: 25 },
-      "assets/joystickBase.png"
+      "/assets/joystickBase.png"
     );
     this.swordstickHand = new GameObject(
       ctx,
       { x: 25, y: 25 },
-      "assets/joystickHandle.png"
+      "/assets/joystickHandle.png"
     );
     this.movestickPos = {
       x:
@@ -135,10 +135,10 @@ export class Player extends GameObject {
     };
 
     this.lastKey = "";
-    this.frames.imgs.up.src = "assets/playerUp.png";
-    this.frames.imgs.down.src = "assets/playerDown.png";
-    this.frames.imgs.left.src = "assets/playerLeft.png";
-    this.frames.imgs.right.src = "assets/playerRight.png";
+    this.frames.imgs.up.src = "/assets/playerUp.png";
+    this.frames.imgs.down.src = "/assets/playerDown.png";
+    this.frames.imgs.left.src = "/assets/playerLeft.png";
+    this.frames.imgs.right.src = "/assets/playerRight.png";
     if (!this.mobile) {
       window.addEventListener("keydown", (e) => {
         const keyNum = parseInt(e.key);
@@ -210,11 +210,11 @@ export class Player extends GameObject {
 
     window.addEventListener("wheel", (e: WheelEvent) => {
       if (e.deltaY > 0) {
-        this.inventory.selected -= 1;
-        if (this.inventory.selected < 0) this.inventory.selected = 7;
-      } else if (e.deltaY < 0) {
         this.inventory.selected += 1;
         if (this.inventory.selected > 7) this.inventory.selected = 0;
+      } else if (e.deltaY < 0) {
+        this.inventory.selected -= 1;
+        if (this.inventory.selected < 0) this.inventory.selected = 7;
       }
     });
     window.addEventListener("mousedown", () => {
@@ -360,9 +360,9 @@ export class Player extends GameObject {
     });
 
     this.hat = {
-      front: new GameObject(ctx, this.pos, "assets/hatFront.png"),
-      side: new GameObject(ctx, this.pos, "assets/hatSide.png"),
-      back: new GameObject(ctx, this.pos, "assets/hatBack.png"),
+      front: new GameObject(ctx, this.pos, "/assets/hatFront.png"),
+      side: new GameObject(ctx, this.pos, "/assets/hatSide.png"),
+      back: new GameObject(ctx, this.pos, "/assets/hatBack.png"),
     };
 
     this.width = Player.width;

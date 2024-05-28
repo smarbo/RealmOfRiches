@@ -15,12 +15,12 @@ export class Button extends GameObject {
     height = 0;
     hoverImg;
     constructor(ctx, pos, text, scale, fun, overlay) {
-        super(ctx, pos, "assets/button.png");
+        super(ctx, pos, "/assets/button.png");
         this.text = text;
         this.fun = fun;
         this.overlay = overlay;
         this.hoverImg = new Image();
-        this.hoverImg.src = "assets/buttonHover.png";
+        this.hoverImg.src = "/assets/buttonHover.png";
         this.img.onload = () => {
             this.width = this.img.width * scale;
             this.height = this.img.height * scale;

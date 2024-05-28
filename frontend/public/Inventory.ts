@@ -20,6 +20,7 @@ export class InvSlot {
 
 export class Inventory {
   selected = 0;
+  ids: string[] = [];
   quickAccess: InvSlot[];
   storage: InvSlot[][] = [[]];
   tileRegular: GameObject;
@@ -91,24 +92,32 @@ export class Inventory {
     this.tileRegular = new GameObject(
       this.ctx,
       { x: 2135, y: 1720 },
-      "assets/inventoryTile.png"
+      "/assets/inventoryTile.png"
     );
     this.tileSelected = new GameObject(
       this.ctx,
       { x: 2135, y: 1720 },
-      "assets/inventorySelected.png"
+      "/assets/inventorySelected.png"
     );
     this.quickAccess = Array(8)
       .fill(null)
       .map(() => new InvSlot(this.ctx));
-
-    this.add("healthPotion");
-    this.add("blessedSword");
-    this.add("ironAxe");
-    this.add("cookie");
   }
 
-  add(id: string) {
+  async update() {
+    this.ids = this.quickAccess.map((s) => (s.item ? s.item.id : ""));
+    await fetch(`/api/user/${localStorage.getItem("username")}`, {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        inventory: this.ids,
+      }),
+    });
+  }
+
+  async add(id: string) {
     for (let i = 0; i < this.quickAccess.length; i++) {
       let slot = this.quickAccess[i];
       if (!slot.item) {
@@ -116,6 +125,15 @@ export class Inventory {
         break;
       }
     }
+    await this.update();
+  }
+
+  async use(player: Player) {
+    const slot = this.quickAccess[this.selected];
+    if (slot.item && slot.item.type === ItemTypes.Interactable)
+      slot.item.use(player);
+    delete slot.item;
+    await this.update();
   }
 
   draw(player: Player) {
@@ -173,10 +191,7 @@ export class Inventory {
         );
 
         if (player.inputs.use) {
-          if ((selectedSlot.item.id = "healthPotion")) {
-            player.health += 15;
-            this.quickAccess[this.selected].item = undefined;
-          }
+          this.use(player);
         }
       }
     }

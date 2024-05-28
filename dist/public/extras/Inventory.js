@@ -1,5 +1,5 @@
 import { GameObject } from "./GameObject.js";
-import { Item } from "./Item.js";
+import { Item, ItemTypes } from "./Item.js";
 import { Sword } from "./Sword.js";
 import { magnitude } from "./Vector.js";
 export class InvSlot {
@@ -22,6 +22,7 @@ export class InvSlot {
 export class Inventory {
     ctx;
     selected = 0;
+    ids = [];
     quickAccess;
     storage = [[]];
     tileRegular;
@@ -82,17 +83,25 @@ export class Inventory {
                 }
             }
         });
-        this.tileRegular = new GameObject(this.ctx, { x: 2135, y: 1720 }, "assets/inventoryTile.png");
-        this.tileSelected = new GameObject(this.ctx, { x: 2135, y: 1720 }, "assets/inventorySelected.png");
+        this.tileRegular = new GameObject(this.ctx, { x: 2135, y: 1720 }, "/assets/inventoryTile.png");
+        this.tileSelected = new GameObject(this.ctx, { x: 2135, y: 1720 }, "/assets/inventorySelected.png");
         this.quickAccess = Array(8)
             .fill(null)
             .map(() => new InvSlot(this.ctx));
-        this.add("healthPotion");
-        this.add("blessedSword");
-        this.add("ironAxe");
-        this.add("cookie");
     }
-    add(id) {
+    async update() {
+        this.ids = this.quickAccess.map((s) => (s.item ? s.item.id : ""));
+        await fetch(`/api/user/${localStorage.getItem("username")}`, {
+            method: "PUT",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                inventory: this.ids,
+            }),
+        });
+    }
+    async add(id) {
         for (let i = 0; i < this.quickAccess.length; i++) {
             let slot = this.quickAccess[i];
             if (!slot.item) {
@@ -100,6 +109,14 @@ export class Inventory {
                 break;
             }
         }
+        await this.update();
+    }
+    async use(player) {
+        const slot = this.quickAccess[this.selected];
+        if (slot.item && slot.item.type === ItemTypes.Interactable)
+            slot.item.use(player);
+        delete slot.item;
+        await this.update();
     }
     draw(player) {
         this.ctx.imageSmoothingEnabled = false;
@@ -146,10 +163,7 @@ export class Inventory {
             else {
                 this.ctx.drawImage(selectedSlot.item.obj.img, player.pos.x, player.pos.y, 96, 96);
                 if (player.inputs.use) {
-                    if ((selectedSlot.item.id = "healthPotion")) {
-                        player.health += 15;
-                        this.quickAccess[this.selected].item = undefined;
-                    }
+                    this.use(player);
                 }
             }
         }

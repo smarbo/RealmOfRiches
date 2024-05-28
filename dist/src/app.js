@@ -32,11 +32,17 @@ const app = (0, express_1.default)();
 const server = http.createServer(app);
 const io = require("socket.io")(server);
 const router = require("./router");
+const apiRouter = require("./apiRouter");
+const cookieParser = require("cookie-parser");
+require("./DropReset.js");
 const path_1 = __importDefault(require("path"));
 const pub = path_1.default.join(__dirname, "..", "public");
 console.log(pub);
 const port = 3000;
 app.use(express_1.default.static(path_1.default.join(pub, "extras")));
+app.use(express_1.default.json());
+app.use(cookieParser());
+app.use("/api", apiRouter);
 app.use(router);
 app.use((req, res, next) => {
     res.status(404);

@@ -15,7 +15,7 @@ export class Sword extends GameObject {
         this.reach = reach;
         this.frames = frames;
         this.attacking = attacking;
-        this.frames.sheet.src = "assets/attackAnimation.png";
+        this.frames.sheet.src = "/assets/attackAnimation.png";
     }
     update(pos, rot) {
         this.pos = pos;

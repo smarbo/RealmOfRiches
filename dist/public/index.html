@@ -3,16 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <title>Realm of Riches</title>
+    <script
+      src="https://kit.fontawesome.com/c557e85911.js"
+      crossorigin="anonymous"
+    ></script>
   </head>
   <body>
     <div class="stuff">
       <div id="lastUpdate">Loading last update</div>
       <div class="welcome">
-        <img src="assets/rorBanner.jpg" width="400" draggable="false" />
-        <a href="play"><button class="launchBtn">Launch</button></a>
+        <h1 id="loggedInMessage">
+          Welcome back, null! <a id="logOut">Log Out</a>
+        </h1>
+        <img src="/assets/rorBanner.jpg" width="400" draggable="false" />
+        <button class="launchBtn" id="launchButton">Launch</button>
       </div>
 
       <footer>
@@ -50,5 +57,7 @@
           } ${date.slice(0, 4)}`;
         });
     </script>
+    <script src="/LaunchController.js"></script>
+    <script src="/Navbar.js"></script>
   </body>
 </html>

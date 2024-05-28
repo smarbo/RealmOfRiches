@@ -21,9 +21,9 @@ export class Button extends GameObject {
     public fun: Function,
     public overlay?: string
   ) {
-    super(ctx, pos, "assets/button.png");
+    super(ctx, pos, "/assets/button.png");
     this.hoverImg = new Image();
-    this.hoverImg.src = "assets/buttonHover.png";
+    this.hoverImg.src = "/assets/buttonHover.png";
     this.img.onload = () => {
       this.width = this.img.width * scale;
       this.height = this.img.height * scale;

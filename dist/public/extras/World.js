@@ -4,12 +4,33 @@ import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
 import { WorldItem } from "./WorldItem.js";
-import { ItemTypes, Items } from "./Item.js";
+import { Item, ItemTypes, Items } from "./Item.js";
 import { Sword } from "./Sword.js";
 import { Direction, Skeleton } from "./Skeleton.js";
 import { State } from "./State.js";
 import { Button, ButtonType } from "./Button.js";
-// @ts-ignore
+const retrievePlayer = async () => {
+    try {
+        const res = await fetch(`/api/user/${localStorage.getItem("username")}`);
+        const r = await res.json();
+        localStorage.setItem("balance", r.balance);
+        localStorage.setItem("dropEligible", r.dropEligible);
+        localStorage.setItem("dropStreak", r.dropStreak);
+        localStorage.setItem("email", r.email);
+        localStorage.setItem("inventory", JSON.stringify(r.inventory));
+        localStorage.setItem("username", r.name);
+        const inv = JSON.parse(localStorage.getItem("inventory"));
+        player.inventory.quickAccess.forEach((s, i) => {
+            if (inv[i] !== "") {
+                s.item = new Item(ctx, inv[i]);
+            }
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
+};
+//@ts-ignore
 const socket = io();
 let room = "";
 let state = State.Idle;
@@ -18,20 +39,26 @@ canvas.style.display = "none";
 canvas.width = screen.width;
 canvas.height = screen.height;
 const cursorImg = new Image();
-cursorImg.src = "assets/cursor.png";
+cursorImg.src = "/assets/cursor.png";
 const attackAnimation = new Image();
-attackAnimation.src = "assets/attackAnimation.png";
+attackAnimation.src = "/assets/attackAnimation.png";
 const roomButton = document.getElementById("roomButton");
 const footer = document.getElementById("footer");
+const usernameLabel = document.getElementById("usernameLabel");
 const desktopChoice = document.getElementById("choiceComputer");
 const mobileChoice = document.getElementById("choiceMobile");
 const choiceContainer = document.getElementById("deviceContainer");
 const buttonChoice = document.getElementById("choiceConfirm");
 const backLink = document.getElementById("back");
 const roomInput = document.getElementById("roomInput");
-const userInput = document.getElementById("userInput");
 const serverSelector = document.getElementById("serverSelector");
 const publicPrivate = document.getElementById("publicPrivate");
+if (!localStorage.getItem("username")) {
+    window.location.href = "/auth/";
+}
+else {
+    usernameLabel.innerText = `You are joining as '${localStorage.getItem("username")}'`;
+}
 var Choice;
 (function (Choice) {
     Choice[Choice["Mobile"] = 0] = "Mobile";
@@ -60,22 +87,20 @@ publicPrivate.onchange = () => {
     if (publicPrivate.checked) {
         roomInput.disabled = false;
         roomInput.style.opacity = "100";
-        userInput.style.transform = "translateY(0)";
     }
     else {
         roomInput.disabled = true;
         roomInput.style.opacity = "0";
-        userInput.style.transform = "translateY(-40px)";
     }
 };
 const worldContainer = document.getElementById("worldContainer");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 let mouse = { x: 0, y: 0 };
-const map = new GameObject(ctx, { x: 0, y: 0 }, "assets/rormap.png");
-const foreground = new GameObject(ctx, { x: 0, y: 0 }, "assets/foreground.png");
-const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/pauseTitle.png");
-const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/slainTitle.png");
+const map = new GameObject(ctx, { x: 0, y: 0 }, "/assets/rormap.png");
+const foreground = new GameObject(ctx, { x: 0, y: 0 }, "/assets/foreground.png");
+const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "/assets/pauseTitle.png");
+const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "/assets/slainTitle.png");
 const buttons = [];
 const deathButtons = [];
 const button = (pos, text, fun, type, overlay) => {
@@ -117,7 +142,7 @@ let enemiesId = [];
 let enemies = {};
 function routineSpawn(pos) {
     if (player.host) {
-        let skele = new Skeleton(ctx, pos, "assets/skeleDown.png", 3.5);
+        let skele = new Skeleton(ctx, pos, "/assets/skeleDown.png", 3.5);
         enemiesId.push(skele.id);
         enemies[skele.id] = skele;
         socket.emit("routineSpawn", skele);
@@ -131,16 +156,16 @@ socket.on("playerUpdate", (plr) => {
     let img = "";
     switch (plr.lastKey) {
         case "w":
-            img = "assets/playerUp.png";
+            img = "/assets/playerUp.png";
             break;
         case "s":
-            img = "assets/playerDown.png";
+            img = "/assets/playerDown.png";
             break;
         case "a":
-            img = "assets/playerLeft.png";
+            img = "/assets/playerLeft.png";
             break;
         case "d":
-            img = "assets/playerRight.png";
+            img = "/assets/playerRight.png";
             break;
     } // if player is already connected
     if (playersList.includes(plr.id)) {
@@ -154,7 +179,7 @@ socket.on("playerUpdate", (plr) => {
 });
 // MAKE ENEMY SPAWN, ENEMY UPDATE, AND ENEMY DIE EVENTS
 socket.on("enemySpawn", (e) => {
-    let skele = new Skeleton(ctx, e.pos, "assets/skeleDown.png", 3.5, e.id);
+    let skele = new Skeleton(ctx, e.pos, "/assets/skeleDown.png", 3.5, e.id);
     enemiesId.push(skele.id);
     enemies[skele.id] = skele;
 });
@@ -172,29 +197,29 @@ socket.on("enemyDamage", (e) => {
 socket.on("roomEnemies", (eIds) => {
     enemiesId = eIds;
     enemiesId.forEach((id) => {
-        enemies[id] = new Skeleton(ctx, { x: 2135, y: 1720 }, "assets/skeleDown.png", 3.5, id);
+        enemies[id] = new Skeleton(ctx, { x: 2135, y: 1720 }, "/assets/skeleDown.png", 3.5, id);
     });
 });
 socket.on("roomPlayers", (ids) => {
     playersList = ids;
     playersList.forEach((id) => {
-        players[id] = new OtherPlayer(ctx, player.pos, "assets/playerDown.png", player.frames, player.username);
+        players[id] = new OtherPlayer(ctx, player.pos, "/assets/playerDown.png", player.frames, player.username);
     });
 });
 socket.on("playerJoin", (plr) => {
     let img = "";
     switch (plr.lastKey) {
         case "w":
-            img = "assets/playerUp.png";
+            img = "/assets/playerUp.png";
             break;
         case "s":
-            img = "assets/playerDown.png";
+            img = "/assets/playerDown.png";
             break;
         case "a":
-            img = "assets/playerLeft.png";
+            img = "/assets/playerLeft.png";
             break;
         case "d":
-            img = "assets/playerRight.png";
+            img = "/assets/playerRight.png";
             break;
     }
     players[plr.id] = new OtherPlayer(ctx, plr.pos, img, plr.frames, plr.username);
@@ -408,9 +433,22 @@ const gameLoop = () => {
             }
         }
     });
+    ctx.fillText(`${localStorage.getItem("balance")} coins.`, screenX(25), screenY(25));
     cursor();
     ctx.restore();
 };
+function screenX(x) {
+    return x + player.pos.x + player.width / 2 - canvas.width / 2;
+}
+function screenY(y) {
+    return y + player.pos.y + player.height / 2 - canvas.height / 2;
+}
+function screenPos(pos) {
+    return {
+        x: screenX(pos.x),
+        y: screenY(pos.y),
+    };
+}
 const click = (btn) => {
     return btn.hover(mouse) && player.inputs.mouse;
 };
@@ -494,8 +532,8 @@ function handleState(timestamp) {
 roomButton.onclick = () => {
     canvas.width = document.documentElement.clientWidth;
     canvas.height = document.documentElement.clientHeight;
-    if (userInput.value != "") {
-        player = new Player(ctx, { x: 2135, y: 1720 }, "assets/playerDown.png", routineSpawn, 4, selected === Choice.Mobile ? true : false, {
+    if (localStorage.getItem("username") !== undefined) {
+        player = new Player(ctx, { x: 2135, y: 1720 }, "/assets/playerDown.png", routineSpawn, 4, selected === Choice.Mobile ? true : false, {
             max: 4,
             val: 0,
             tick: 0,
@@ -505,10 +543,12 @@ roomButton.onclick = () => {
                 right: new Image(),
                 down: new Image(),
             },
-        }, userInput.value);
+        }, localStorage.getItem("username"));
+        retrievePlayer();
         player.id = socket.id;
         worldContainer.hidden = true;
         worldContainer.style.display = "none";
+        navbar.style.display = "none";
         footer.hidden = true;
         footer.style.display = "none";
         backLink.hidden = true;
@@ -533,7 +573,7 @@ roomButton.onclick = () => {
             settings = true;
         }, ButtonType.Menu);
         button({ x: canvas.width / 2 + 2, y: canvas.height / 2 - 120 + 48 + 24 }, "LEAVE WORLD", () => {
-            window.location.href = "";
+            window.location.href = "/";
         }, ButtonType.Menu);
         button({ x: canvas.width / 2 - Button.width / 2, y: canvas.height / 2 - 120 }, "BACK TO MENU", () => {
             settings = false;
@@ -542,7 +582,7 @@ roomButton.onclick = () => {
             x: canvas.width / 2 - Button.width / 2,
             y: canvas.height / 2 + Button.height + 10,
         }, "ACCEPT YOUR FATE", () => {
-            window.location.href = "";
+            window.location.href = "/";
         }, ButtonType.Death, "rgba(200,80,80,0.5)");
         socket.emit("playerJoin", player);
         state = State.Paused;

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv").config();
-const API_KEY_LABEL = "ror-auth-key";
+const COOKIE_KEY_LABEL = "ror_auth_key";
 class ApiHandler {
     getFn;
     postFn;
@@ -23,8 +23,8 @@ class ApiHandler {
     }
     async handleRequest(req, res) {
         try {
-            const { headers } = req;
-            const reqAuthKey = headers[API_KEY_LABEL];
+            const { cookies } = req;
+            const reqAuthKey = cookies[COOKIE_KEY_LABEL];
             let keyValid = false;
             this.authKeys.forEach((key) => {
                 if (reqAuthKey === key)

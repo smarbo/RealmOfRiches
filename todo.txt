@@ -1,9 +1,10 @@
 make character selector
 make upgradeable tools
-add farming (fin's W idea)
+add farming
 shop
 game chat
-interiors (add kians idea)
+!interiors!
+buy coins smart contract sepolia testnet
+!!!new map!!!
 
-users authentication and --database
-daily drop system and reminders on play page
+(!!!!!!!!!(((- daily drop reminder on play page)))(!!!!!!!!

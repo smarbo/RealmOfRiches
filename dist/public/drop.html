@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Realm of Riches</title>
+    <script
+      src="https://kit.fontawesome.com/c557e85911.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="stuff">
+      <button id="infoButton"><i class="fa-solid fa-circle-info"></i></button>
+      <div id="dropContainer">
+        <img src="/assets/dropBanner.png" width="468" />
+        <div id="container">
+          <div class="text">
+            <h1 id="eligible">You are LOADING eligible for a drop!</h1>
+            <h1 id="balance">Current balance: LOADING</h1>
+          </div>
+
+          <button id="claimBtn" class="launchBtn">Open</button>
+          <div class="text">
+            <h1 id="dropStreak">🔥Drop Streak: LOADING days</h1>
+            <h1 id="nextDrop">Next drop: 9:00 AM 27/05/2024</h1>
+          </div>
+        </div>
+
+        <div id="dropReveal" style="display: none">
+          <div id="glow"></div>
+          <img id="chest" src="/assets/chest.png" width="200" />
+          <img id="chestOpen" src="/assets/chestOpen.png" width="200" />
+          <button id="revealDrop">Reveal</button>
+        </div>
+      </div>
+      <div id="infoContainer" style="display: none">
+        <h1 class="infoTitle">Drop Info</h1>
+        <pre class="info">
+          🔥 Streak increases every day you claim a drop,
+          💀 Streak resets when you miss a drop.
+
+          ⌛ Drop Chances:
+          <p style="color: brown; display: inline;">Standard</p>: 43.75% (1-5 Gems)
+          <p style="color: orange; display: inline;">Enhanced</p>: 31.25% (5-10 Gems)
+          <p style="color: deeppink; display: inline;">Elite</p>: 18.75% (15-30 Gems)
+          <p style="color: turquoise; display: inline;">Mythic</p>: 6.25% (100-250 Gems)
+
+        </pre>
+      </div>
+
+      <footer>
+        <h2><a href="https://github.com/smarbo">Eddie Obrams</a> 2024</h2>
+      </footer>
+    </div>
+    <script>
+      let t = new Date();
+      t.setDate(t.getDate() + 1);
+      nextDrop.innerText = `Next drop: 00:00AM ${String(t.getDate()).padStart(
+        2,
+        "0"
+      )}/${String(t.getMonth() + 1).padStart(2, "0")}/${t.getFullYear()}`;
+    </script>
+
+    <script src="/Navbar.js"></script>
+    <script src="/DropController.js"></script>
+  </body>
+</html>

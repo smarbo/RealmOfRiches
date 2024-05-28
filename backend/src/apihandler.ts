@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 require("dotenv").config();
 
-const API_KEY_LABEL: string = "ror-auth-key";
+const COOKIE_KEY_LABEL: string = "ror_auth_key";
 
 export default class ApiHandler {
   getFn: Function;
@@ -39,8 +39,8 @@ export default class ApiHandler {
 
   async handleRequest(req: Request, res: Response) {
     try {
-      const { headers } = req;
-      const reqAuthKey = headers[API_KEY_LABEL];
+      const { cookies } = req;
+      const reqAuthKey = cookies[COOKIE_KEY_LABEL];
       let keyValid = false;
       this.authKeys.forEach((key) => {
         if (reqAuthKey === key) keyValid = true;

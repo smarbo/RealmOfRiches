@@ -6,24 +6,17 @@ export interface IUser {
   password: string;
   balance: number;
   dropEligible: boolean;
+  dropStreak: number;
   inventory: (string | undefined)[];
 }
 
-const myMan: IUser = {
-  name: "eddie",
-  email: "edieobram",
-  password: "pwd",
-  balance: 0,
-  dropEligible: false,
-  inventory: [],
-};
-
 const userSchema = new Schema<IUser>({
-  name: { type: String, required: true },
-  email: String,
+  name: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   balance: { type: Number, required: true },
   dropEligible: { type: Boolean, required: true },
+  dropStreak: { type: Number, required: true },
   inventory: { type: [String] },
 });
 

@@ -26,7 +26,7 @@ export class Sword extends GameObject {
     public attacking: boolean = false
   ) {
     super(ctx, pos, img);
-    this.frames.sheet.src = "assets/attackAnimation.png";
+    this.frames.sheet.src = "/assets/attackAnimation.png";
   }
 
   update(pos: Vector, rot: number) {

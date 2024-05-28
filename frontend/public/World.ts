@@ -4,16 +4,36 @@ import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
 import { WorldItem } from "./WorldItem.js";
-import { ItemTypes, Items } from "./Item.js";
+import { Item, ItemTypes, Items } from "./Item.js";
 import { Sword } from "./Sword.js";
 import { Direction, Skeleton } from "./Skeleton.js";
 import { Vector } from "./Vector.js";
 import { State } from "./State.js";
 import { Button, ButtonType } from "./Button.js";
-// @ts-ignore
 
-const socket: Socket = io();
-let room = "";
+const retrievePlayer = async () => {
+  try {
+    const res = await fetch(`/api/user/${localStorage.getItem("username")}`);
+    const r = await res.json();
+    localStorage.setItem("balance", r.balance);
+    localStorage.setItem("dropEligible", r.dropEligible);
+    localStorage.setItem("dropStreak", r.dropStreak);
+    localStorage.setItem("email", r.email);
+    localStorage.setItem("inventory", JSON.stringify(r.inventory));
+    localStorage.setItem("username", r.name);
+    const inv = JSON.parse(localStorage.getItem("inventory")!);
+    player.inventory.quickAccess.forEach((s, i) => {
+      if (inv[i] !== "") {
+        s.item = new Item(ctx, inv[i]);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+//@ts-ignore
+const socket = io();
+let room: string = "";
 
 let state: State = State.Idle;
 
@@ -23,13 +43,16 @@ canvas.width = screen.width;
 canvas.height = screen.height;
 
 const cursorImg = new Image();
-cursorImg.src = "assets/cursor.png";
+cursorImg.src = "/assets/cursor.png";
 
 const attackAnimation = new Image();
-attackAnimation.src = "assets/attackAnimation.png";
+attackAnimation.src = "/assets/attackAnimation.png";
 
 const roomButton = document.getElementById("roomButton") as HTMLButtonElement;
 const footer = document.getElementById("footer") as HTMLDivElement;
+const usernameLabel = document.getElementById(
+  "usernameLabel"
+) as HTMLHeadingElement;
 const desktopChoice = document.getElementById(
   "choiceComputer"
 ) as HTMLDivElement;
@@ -42,13 +65,20 @@ const buttonChoice = document.getElementById(
 ) as HTMLButtonElement;
 const backLink = document.getElementById("back") as HTMLAnchorElement;
 const roomInput = document.getElementById("roomInput") as HTMLInputElement;
-const userInput = document.getElementById("userInput") as HTMLInputElement;
 const serverSelector = document.getElementById(
   "serverSelector"
 ) as HTMLDivElement;
 const publicPrivate = document.getElementById(
   "publicPrivate"
 ) as HTMLInputElement;
+
+if (!localStorage.getItem("username")) {
+  window.location.href = "/auth/";
+} else {
+  usernameLabel.innerText = `You are joining as '${localStorage.getItem(
+    "username"
+  )!}'`;
+}
 
 enum Choice {
   Mobile,
@@ -81,11 +111,9 @@ publicPrivate.onchange = () => {
   if (publicPrivate.checked) {
     roomInput.disabled = false;
     roomInput.style.opacity = "100";
-    userInput.style.transform = "translateY(0)";
   } else {
     roomInput.disabled = true;
     roomInput.style.opacity = "0";
-    userInput.style.transform = "translateY(-40px)";
   }
 };
 
@@ -98,10 +126,22 @@ ctx.imageSmoothingEnabled = false;
 
 let mouse: Vector = { x: 0, y: 0 };
 
-const map = new GameObject(ctx, { x: 0, y: 0 }, "assets/rormap.png");
-const foreground = new GameObject(ctx, { x: 0, y: 0 }, "assets/foreground.png");
-const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/pauseTitle.png");
-const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "assets/slainTitle.png");
+const map = new GameObject(ctx, { x: 0, y: 0 }, "/assets/rormap.png");
+const foreground = new GameObject(
+  ctx,
+  { x: 0, y: 0 },
+  "/assets/foreground.png"
+);
+const pauseTitle = new GameObject(
+  ctx,
+  { x: 0, y: 0 },
+  "/assets/pauseTitle.png"
+);
+const slainTitle = new GameObject(
+  ctx,
+  { x: 0, y: 0 },
+  "/assets/slainTitle.png"
+);
 
 const buttons: Button[] = [];
 const deathButtons: Button[] = [];
@@ -189,7 +229,7 @@ let enemies: {
 
 function routineSpawn(pos: Vector) {
   if (player.host) {
-    let skele = new Skeleton(ctx, pos, "assets/skeleDown.png", 3.5);
+    let skele = new Skeleton(ctx, pos, "/assets/skeleDown.png", 3.5);
 
     enemiesId.push(skele.id);
     enemies[skele.id] = skele;
@@ -206,16 +246,16 @@ socket.on("playerUpdate", (plr: Player) => {
   let img = "";
   switch (plr.lastKey) {
     case "w":
-      img = "assets/playerUp.png";
+      img = "/assets/playerUp.png";
       break;
     case "s":
-      img = "assets/playerDown.png";
+      img = "/assets/playerDown.png";
       break;
     case "a":
-      img = "assets/playerLeft.png";
+      img = "/assets/playerLeft.png";
       break;
     case "d":
-      img = "assets/playerRight.png";
+      img = "/assets/playerRight.png";
       break;
   } // if player is already connected
   if (playersList.includes(plr.id)) {
@@ -229,7 +269,7 @@ socket.on("playerUpdate", (plr: Player) => {
 });
 // MAKE ENEMY SPAWN, ENEMY UPDATE, AND ENEMY DIE EVENTS
 socket.on("enemySpawn", (e: Skeleton) => {
-  let skele = new Skeleton(ctx, e.pos, "assets/skeleDown.png", 3.5, e.id);
+  let skele = new Skeleton(ctx, e.pos, "/assets/skeleDown.png", 3.5, e.id);
   enemiesId.push(skele.id);
   enemies[skele.id] = skele;
 });
@@ -253,7 +293,7 @@ socket.on("roomEnemies", (eIds: string[]) => {
     enemies[id] = new Skeleton(
       ctx,
       { x: 2135, y: 1720 },
-      "assets/skeleDown.png",
+      "/assets/skeleDown.png",
       3.5,
       id
     );
@@ -266,7 +306,7 @@ socket.on("roomPlayers", (ids: string[]) => {
     players[id] = new OtherPlayer(
       ctx,
       player.pos,
-      "assets/playerDown.png",
+      "/assets/playerDown.png",
       player.frames,
       player.username
     );
@@ -277,16 +317,16 @@ socket.on("playerJoin", (plr: Player) => {
   let img = "";
   switch (plr.lastKey) {
     case "w":
-      img = "assets/playerUp.png";
+      img = "/assets/playerUp.png";
       break;
     case "s":
-      img = "assets/playerDown.png";
+      img = "/assets/playerDown.png";
       break;
     case "a":
-      img = "assets/playerLeft.png";
+      img = "/assets/playerLeft.png";
       break;
     case "d":
-      img = "assets/playerRight.png";
+      img = "/assets/playerRight.png";
       break;
   }
   players[plr.id] = new OtherPlayer(
@@ -538,10 +578,28 @@ const gameLoop = () => {
     }
   });
 
+  ctx.fillText(
+    `${localStorage.getItem("balance")} coins.`,
+    screenX(25),
+    screenY(25)
+  );
   cursor();
 
   ctx.restore();
 };
+
+function screenX(x: number): number {
+  return x + player.pos.x + player.width / 2 - canvas.width / 2;
+}
+function screenY(y: number): number {
+  return y + player.pos.y + player.height / 2 - canvas.height / 2;
+}
+function screenPos(pos: Vector): Vector {
+  return {
+    x: screenX(pos.x),
+    y: screenY(pos.y),
+  };
+}
 
 const click = (btn: Button) => {
   return btn.hover(mouse) && player.inputs.mouse;
@@ -603,6 +661,7 @@ const deathScreen = () => {
 //* Main game loop
 function handleState(timestamp: number) {
   const deltaTime = timestamp - lastTime;
+
   if (deltaTime < frameDuration) {
     requestAnimationFrame(handleState);
     return;
@@ -628,11 +687,11 @@ function handleState(timestamp: number) {
 roomButton.onclick = () => {
   canvas.width = document.documentElement.clientWidth;
   canvas.height = document.documentElement.clientHeight;
-  if (userInput.value != "") {
+  if (localStorage.getItem("username") !== undefined) {
     player = new Player(
       ctx,
       { x: 2135, y: 1720 },
-      "assets/playerDown.png",
+      "/assets/playerDown.png",
       routineSpawn,
       4,
       selected === Choice.Mobile ? true : false,
@@ -647,12 +706,14 @@ roomButton.onclick = () => {
           down: new Image(),
         },
       },
-      userInput.value
+      localStorage.getItem("username")!
     );
+    retrievePlayer();
 
     player.id = socket.id;
     worldContainer.hidden = true;
     worldContainer.style.display = "none";
+    navbar.style.display = "none";
     footer.hidden = true;
     footer.style.display = "none";
     backLink.hidden = true;
@@ -691,7 +752,7 @@ roomButton.onclick = () => {
       { x: canvas.width / 2 + 2, y: canvas.height / 2 - 120 + 48 + 24 },
       "LEAVE WORLD",
       () => {
-        window.location.href = "";
+        window.location.href = "/";
       },
       ButtonType.Menu
     );
@@ -712,7 +773,7 @@ roomButton.onclick = () => {
       },
       "ACCEPT YOUR FATE",
       () => {
-        window.location.href = "";
+        window.location.href = "/";
       },
       ButtonType.Death,
       "rgba(200,80,80,0.5)"
