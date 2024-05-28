@@ -454,7 +454,7 @@ input:checked + .slider::before {
   display: none;
   position: absolute;
   width: 200px !important;
-  top: 100px;
+  top: 100px !important;
   left: 50%;
   transform: translate(-50%, calc(-50% + 200px)) scale(1) rotate(0deg);
   animation: none;
