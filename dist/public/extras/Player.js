@@ -3,6 +3,8 @@ import { magnitude } from "./Vector.js";
 import { Inventory } from "./Inventory.js";
 import { State } from "./State.js";
 import { Sword } from "./Sword.js";
+import { Map } from "./Map.js";
+import { rorMapCollisions, newMapCollisions } from "./Collisions.js";
 const cursor = new Image();
 cursor.src = "/assets/cursor.png";
 export class Player extends GameObject {
@@ -11,6 +13,7 @@ export class Player extends GameObject {
     mobile;
     frames;
     username;
+    map;
     movestickPos;
     movestickTouch;
     movestickBase;
@@ -39,7 +42,7 @@ export class Player extends GameObject {
     hat;
     host = false;
     colliding = { up: false, down: false, left: false, right: false };
-    constructor(ctx, pos, img, routineSpawn, speed, mobile, frames = {
+    constructor(ctx, img, routineSpawn, speed, mobile, frames = {
         max: 4,
         val: 0,
         tick: 0,
@@ -50,12 +53,17 @@ export class Player extends GameObject {
             down: new Image(),
         },
     }, username) {
-        super(ctx, pos, img);
+        const rorMap = new Map(ctx, "/assets/rormap.png", "/assets/foreground.png", rorMapCollisions, 140, { x: 2135, y: 1720 });
+        const newMap = new Map(ctx, "/assets/newMap.png", "/assets/foreground.png", newMapCollisions, 1280, { x: 15984, y: 24576 });
+        const map = newMap;
+        super(ctx, { ...map.spawnPoint }, img);
         this.routineSpawn = routineSpawn;
         this.speed = speed;
         this.mobile = mobile;
         this.frames = frames;
         this.username = username;
+        this.map = map;
+        this.pos = { ...this.map.spawnPoint };
         this.inventory = new Inventory(ctx, this);
         this.inputs = {
             up: false,
@@ -179,7 +187,7 @@ export class Player extends GameObject {
             this.inputs.mouse = false;
         });
         setInterval(() => {
-            routineSpawn({ x: 2135, y: 1720 });
+            routineSpawn({ x: 18960, y: 24000 });
         }, 5000);
         this.ctx.canvas.addEventListener("mousemove", (e) => {
             // Mouse offset

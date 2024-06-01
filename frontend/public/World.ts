@@ -1,5 +1,5 @@
 import { Boundary } from "./Boundary.js";
-import { collisions } from "./Collisions.js";
+import { rorMapCollisions } from "./Collisions.js";
 import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
@@ -10,6 +10,7 @@ import { Direction, Skeleton } from "./Skeleton.js";
 import { Vector } from "./Vector.js";
 import { State } from "./State.js";
 import { Button, ButtonType } from "./Button.js";
+import { Map } from "./Map.js";
 
 const retrievePlayer = async () => {
   try {
@@ -126,12 +127,15 @@ ctx.imageSmoothingEnabled = false;
 
 let mouse: Vector = { x: 0, y: 0 };
 
-const map = new GameObject(ctx, { x: 0, y: 0 }, "/assets/rormap.png");
-const foreground = new GameObject(
+const rorMap = new Map(
   ctx,
-  { x: 0, y: 0 },
-  "/assets/foreground.png"
+  "/assets/rormap.png",
+  "/assets/foreground.png",
+  rorMapCollisions,
+  140,
+  { x: 2135, y: 1720 }
 );
+
 const pauseTitle = new GameObject(
   ctx,
   { x: 0, y: 0 },
@@ -198,23 +202,6 @@ const button = (
   }
 };
 
-const collisionsMap = [];
-for (let i = 0; i < collisions.length; i += 140) {
-  collisionsMap.push(collisions.slice(i, i + 140));
-}
-
-const boundaries: Boundary[] = [];
-
-collisionsMap.forEach((row, i) => {
-  row.forEach((symbol: number, j: number) => {
-    if (symbol === 1025) {
-      boundaries.push(
-        new Boundary(ctx, { x: j * Boundary.width, y: i * Boundary.height })
-      );
-    }
-  });
-});
-
 let player: Player;
 
 let players: {
@@ -228,8 +215,13 @@ let enemies: {
 } = {};
 
 function routineSpawn(pos: Vector) {
-  if (player.host) {
-    let skele = new Skeleton(ctx, pos, "/assets/skeleDown.png", 3.5);
+  if (player.host && enemiesId.length < 5) {
+    let skele = new Skeleton(
+      ctx,
+      { ...player.map.spawnPoint },
+      "/assets/skeleDown.png",
+      3.5
+    );
 
     enemiesId.push(skele.id);
     enemies[skele.id] = skele;
@@ -292,7 +284,7 @@ socket.on("roomEnemies", (eIds: string[]) => {
   enemiesId.forEach((id) => {
     enemies[id] = new Skeleton(
       ctx,
-      { x: 2135, y: 1720 },
+      { ...player.map.spawnPoint },
       "/assets/skeleDown.png",
       3.5,
       id
@@ -375,7 +367,7 @@ const gameLoop = () => {
     canvas.width / 2 - player.pos.x - player.img.width / 8,
     canvas.height / 2 - player.pos.y - player.img.height / 2
   );
-  map.draw();
+  player.map.drawBase();
 
   if (playersList.length >= 1) {
     playersList.forEach((plrId) => {
@@ -440,9 +432,12 @@ const gameLoop = () => {
       let e = enemies[eId];
       if (e.health < 1) {
         delete enemies[eId];
-        delete enemiesId[i];
+        enemiesId.splice(enemiesId.indexOf(eId), 1);
         socket.emit("enemyKill", e);
         worldItems.push(new WorldItem(ctx, { ...e.pos }, "cookie"));
+        worldItems.push(
+          new WorldItem(ctx, { x: e.pos.x + 20, y: e.pos.y }, "healthPotion")
+        );
       }
       e.draw();
 
@@ -492,11 +487,11 @@ const gameLoop = () => {
   }
   player.draw(state);
 
-  foreground.draw();
+  player.map.drawFore();
   player.inv(state);
 
   player.stats(state);
-  boundaries.forEach((b) => {
+  player.map.boundaries.forEach((b) => {
     // collision detection for player
     if (enemiesId.length >= 1) {
       enemiesId.forEach((eId) => {
@@ -524,7 +519,6 @@ const gameLoop = () => {
         }
       });
     }
-
     if (
       player.pos.x + player.width > b.pos.x &&
       player.pos.x < b.pos.x + b.width &&
@@ -690,7 +684,6 @@ roomButton.onclick = () => {
   if (localStorage.getItem("username") !== undefined) {
     player = new Player(
       ctx,
-      { x: 2135, y: 1720 },
       "/assets/playerDown.png",
       routineSpawn,
       4,

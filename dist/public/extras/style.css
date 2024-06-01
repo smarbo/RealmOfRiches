@@ -522,7 +522,7 @@ input:checked + .slider::before {
     opacity: 0;
   }
   100% {
-    opacity: 0.2;
+    opacity: 0.5;
   }
 }
 

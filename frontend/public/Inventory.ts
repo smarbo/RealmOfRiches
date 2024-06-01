@@ -4,7 +4,6 @@ import { OtherPlayer } from "./OtherPlayer.js";
 import { Player } from "./Player.js";
 import { Sword } from "./Sword.js";
 import { Vector, magnitude, rotateVector } from "./Vector.js";
-
 export class InvSlot {
   constructor(public ctx: CanvasRenderingContext2D, public item?: Item) {}
   draw(tile: GameObject) {
@@ -17,6 +16,7 @@ export class InvSlot {
     }
   }
 }
+
 
 export class Inventory {
   selected = 0;

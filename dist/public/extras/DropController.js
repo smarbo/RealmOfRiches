@@ -50,7 +50,7 @@ const updateContainer = () => {
                                 case "orange":
                                     category = "n Enhanced";
                                     break;
-                                case "pink":
+                                case "deeppink":
                                     category = "n Elite";
                                     break;
                                 case "turquoise":

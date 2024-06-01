@@ -4,6 +4,8 @@ import { Vector, magnitude } from "./Vector.js";
 import { Inventory } from "./Inventory.js";
 import { State } from "./State.js";
 import { Sword } from "./Sword.js";
+import { Map } from "./Map.js";
+import { rorMapCollisions, newMapCollisions } from "./Collisions.js";
 
 const cursor = new Image();
 cursor.src = "/assets/cursor.png";
@@ -27,6 +29,7 @@ export type Hat = {
 };
 
 export class Player extends GameObject {
+  map: Map;
   movestickPos: Vector;
   movestickTouch: number | undefined;
   movestickBase: GameObject;
@@ -63,7 +66,6 @@ export class Player extends GameObject {
 
   constructor(
     ctx: CanvasRenderingContext2D,
-    pos: Vector,
     img: string,
     public routineSpawn: Function,
     public speed: number,
@@ -81,7 +83,26 @@ export class Player extends GameObject {
     },
     public username: string
   ) {
-    super(ctx, pos, img);
+    const rorMap = new Map(
+      ctx,
+      "/assets/rormap.png",
+      "/assets/foreground.png",
+      rorMapCollisions,
+      140,
+      { x: 2135, y: 1720 }
+    );
+    const newMap = new Map(
+      ctx,
+      "/assets/newMap.png",
+      "/assets/foreground.png",
+      newMapCollisions,
+      1280,
+      { x: 15984, y: 24576 }
+    );
+    const map = newMap;
+    super(ctx, { ...map.spawnPoint }, img);
+    this.map = map;
+    this.pos = { ...this.map.spawnPoint };
     this.inventory = new Inventory(ctx, this);
     this.inputs = {
       up: false,
@@ -224,7 +245,7 @@ export class Player extends GameObject {
       this.inputs.mouse = false;
     });
     setInterval(() => {
-      routineSpawn({ x: 2135, y: 1720 });
+      routineSpawn({ x: 18960, y: 24000 });
     }, 5000);
     this.ctx.canvas.addEventListener("mousemove", (e: MouseEvent) => {
       // Mouse offset

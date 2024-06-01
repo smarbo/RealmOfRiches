@@ -1,5 +1,4 @@
-import { Boundary } from "./Boundary.js";
-import { collisions } from "./Collisions.js";
+import { rorMapCollisions } from "./Collisions.js";
 import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
@@ -9,6 +8,7 @@ import { Sword } from "./Sword.js";
 import { Direction, Skeleton } from "./Skeleton.js";
 import { State } from "./State.js";
 import { Button, ButtonType } from "./Button.js";
+import { Map } from "./Map.js";
 const retrievePlayer = async () => {
     try {
         const res = await fetch(`/api/user/${localStorage.getItem("username")}`);
@@ -97,8 +97,7 @@ const worldContainer = document.getElementById("worldContainer");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 let mouse = { x: 0, y: 0 };
-const map = new GameObject(ctx, { x: 0, y: 0 }, "/assets/rormap.png");
-const foreground = new GameObject(ctx, { x: 0, y: 0 }, "/assets/foreground.png");
+const rorMap = new Map(ctx, "/assets/rormap.png", "/assets/foreground.png", rorMapCollisions, 140, { x: 2135, y: 1720 });
 const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "/assets/pauseTitle.png");
 const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "/assets/slainTitle.png");
 const buttons = [];
@@ -123,26 +122,14 @@ const button = (pos, text, fun, type, overlay) => {
         }, overlay));
     }
 };
-const collisionsMap = [];
-for (let i = 0; i < collisions.length; i += 140) {
-    collisionsMap.push(collisions.slice(i, i + 140));
-}
-const boundaries = [];
-collisionsMap.forEach((row, i) => {
-    row.forEach((symbol, j) => {
-        if (symbol === 1025) {
-            boundaries.push(new Boundary(ctx, { x: j * Boundary.width, y: i * Boundary.height }));
-        }
-    });
-});
 let player;
 let players = {};
 let playersList = [];
 let enemiesId = [];
 let enemies = {};
 function routineSpawn(pos) {
-    if (player.host) {
-        let skele = new Skeleton(ctx, pos, "/assets/skeleDown.png", 3.5);
+    if (player.host && enemiesId.length < 5) {
+        let skele = new Skeleton(ctx, { ...player.map.spawnPoint }, "/assets/skeleDown.png", 3.5);
         enemiesId.push(skele.id);
         enemies[skele.id] = skele;
         socket.emit("routineSpawn", skele);
@@ -197,7 +184,7 @@ socket.on("enemyDamage", (e) => {
 socket.on("roomEnemies", (eIds) => {
     enemiesId = eIds;
     enemiesId.forEach((id) => {
-        enemies[id] = new Skeleton(ctx, { x: 2135, y: 1720 }, "/assets/skeleDown.png", 3.5, id);
+        enemies[id] = new Skeleton(ctx, { ...player.map.spawnPoint }, "/assets/skeleDown.png", 3.5, id);
     });
 });
 socket.on("roomPlayers", (ids) => {
@@ -254,7 +241,7 @@ const gameLoop = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(canvas.width / 2 - player.pos.x - player.img.width / 8, canvas.height / 2 - player.pos.y - player.img.height / 2);
-    map.draw();
+    player.map.drawBase();
     if (playersList.length >= 1) {
         playersList.forEach((plrId) => {
             let plr = players[plrId];
@@ -305,9 +292,10 @@ const gameLoop = () => {
             let e = enemies[eId];
             if (e.health < 1) {
                 delete enemies[eId];
-                delete enemiesId[i];
+                enemiesId.splice(enemiesId.indexOf(eId), 1);
                 socket.emit("enemyKill", e);
                 worldItems.push(new WorldItem(ctx, { ...e.pos }, "cookie"));
+                worldItems.push(new WorldItem(ctx, { x: e.pos.x + 20, y: e.pos.y }, "healthPotion"));
             }
             e.draw();
             if (playersList.length >= 1) {
@@ -350,10 +338,10 @@ const gameLoop = () => {
         });
     }
     player.draw(state);
-    foreground.draw();
+    player.map.drawFore();
     player.inv(state);
     player.stats(state);
-    boundaries.forEach((b) => {
+    player.map.boundaries.forEach((b) => {
         // collision detection for player
         if (enemiesId.length >= 1) {
             enemiesId.forEach((eId) => {
@@ -533,7 +521,7 @@ roomButton.onclick = () => {
     canvas.width = document.documentElement.clientWidth;
     canvas.height = document.documentElement.clientHeight;
     if (localStorage.getItem("username") !== undefined) {
-        player = new Player(ctx, { x: 2135, y: 1720 }, "/assets/playerDown.png", routineSpawn, 4, selected === Choice.Mobile ? true : false, {
+        player = new Player(ctx, "/assets/playerDown.png", routineSpawn, 4, selected === Choice.Mobile ? true : false, {
             max: 4,
             val: 0,
             tick: 0,
