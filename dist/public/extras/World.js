@@ -38,6 +38,10 @@ const canvas = document.getElementById("canvas");
 canvas.style.display = "none";
 canvas.width = screen.width;
 canvas.height = screen.height;
+window.onresize = () => {
+    canvas.width = screen.width;
+    canvas.height = screen.height;
+};
 const cursorImg = new Image();
 cursorImg.src = "/assets/cursor.png";
 const attackAnimation = new Image();

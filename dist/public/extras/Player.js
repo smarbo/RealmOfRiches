@@ -54,7 +54,7 @@ export class Player extends GameObject {
         },
     }, username) {
         const rorMap = new Map(ctx, "/assets/rormap.png", "/assets/foreground.png", rorMapCollisions, 140, { x: 2135, y: 1720 });
-        const newMap = new Map(ctx, "/assets/newMap.png", "/assets/foreground.png", newMapCollisions, 1280, { x: 15984, y: 24576 });
+        const newMap = new Map(ctx, "/assets/newMap.png", "/assets/newForeground.png", newMapCollisions, 1280, { x: 15984, y: 24576 });
         const map = newMap;
         super(ctx, { ...map.spawnPoint }, img);
         this.routineSpawn = routineSpawn;

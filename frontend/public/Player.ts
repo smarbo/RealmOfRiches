@@ -94,7 +94,7 @@ export class Player extends GameObject {
     const newMap = new Map(
       ctx,
       "/assets/newMap.png",
-      "/assets/foreground.png",
+      "/assets/newForeground.png",
       newMapCollisions,
       1280,
       { x: 15984, y: 24576 }
