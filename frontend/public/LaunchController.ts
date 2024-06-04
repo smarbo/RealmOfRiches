@@ -2,6 +2,11 @@ const loggedInMessage = document.getElementById(
   "loggedInMessage"
 ) as HTMLHeadingElement;
 
+
+const dropMessage = document.getElementById(
+  "dropMessage"
+) as HTMLAnchorElement;
+
 const launchButton = document.getElementById(
   "launchButton"
 ) as HTMLButtonElement;
@@ -35,6 +40,11 @@ const checkUser = async () => {
       localStorage.setItem("dropEligible", r.dropEligible);
       localStorage.setItem("dropStreak", r.dropStreak);
       localStorage.setItem("inventory", JSON.stringify(r.inventory));
+      if(r.dropEligible === true){
+        dropMessage.display = "block";
+      } else{
+        dropmessage.display = "none";
+      }
       return true;
     } else if (r.authenticated === false) {
       localStorage.clear();

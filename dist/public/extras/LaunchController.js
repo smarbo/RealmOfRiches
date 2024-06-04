@@ -1,5 +1,6 @@
 "use strict";
 const loggedInMessage = document.getElementById("loggedInMessage");
+const dropMessage = document.getElementById("dropMessage");
 const launchButton = document.getElementById("launchButton");
 launchButton.onclick = () => {
     window.location.href = "/play/";
@@ -29,6 +30,12 @@ const checkUser = async () => {
             localStorage.setItem("dropEligible", r.dropEligible);
             localStorage.setItem("dropStreak", r.dropStreak);
             localStorage.setItem("inventory", JSON.stringify(r.inventory));
+            if (r.dropEligible === true) {
+                dropMessage.display = "block";
+            }
+            else {
+                dropmessage.display = "none";
+            }
             return true;
         }
         else if (r.authenticated === false) {

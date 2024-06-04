@@ -15,6 +15,12 @@
   --rorBanner: url("/assets/rorBanner.jpg");
 }
 
+#dropMessage{
+  color: white;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
 body {
   overflow: hidden;
   touch-action: none;
@@ -211,7 +217,7 @@ a {
   flex-direction: column;
   border-radius: 15px;
   padding: 20px;
-  height: 280px;
+  height: 340px;
   justify-content: center;
   align-items: center;
 }
@@ -560,7 +566,6 @@ input:checked + .slider::before {
   cursor: pointer;
   animation: fade 3s forwards;
 }
-
 #dropContainer img {
   position: fixed;
   top: 20px;
@@ -673,6 +678,20 @@ input:checked + .slider::before {
 
 #mobileMenu {
   display: none;
+}
+
+@media screen and (max-height: 550px){
+  .welcome{
+    height: 60%;
+    width: 80vw;
+    transform: translate(-50%, -40%);
+  }
+
+  #welcomeBanner{
+    display: none;
+  }
+
+
 }
 
 @media screen and (max-width: 512px) {
@@ -837,10 +856,15 @@ input:checked + .slider::before {
   }
 }
 
-@media screen and (max-height: 500px) {
+@media screen and (max-height: 550px) {
   #deviceContainer {
-    transform: translate(-50%, -60%);
+    transform: translate(-50%, -40%);
     height: 250px;
+  }
+
+  #worldContainer{
+    height: 60%;
+    transform: translate(-50%, -40%);
   }
 
   .choice {
