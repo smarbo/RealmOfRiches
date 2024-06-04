@@ -41,9 +41,9 @@ const checkUser = async () => {
       localStorage.setItem("dropStreak", r.dropStreak);
       localStorage.setItem("inventory", JSON.stringify(r.inventory));
       if(r.dropEligible === true){
-        dropMessage.display = "block";
+        dropMessage.style.display = "block";
       } else{
-        dropmessage.display = "none";
+        dropMessage.style.display = "none";
       }
       return true;
     } else if (r.authenticated === false) {
