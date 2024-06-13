@@ -6,5 +6,5 @@ game chat
 !interiors
 buy coins smart contract sepolia testnet
 !!!new map!!!
-
+!!!!!!!!!!!!!!!!!!REWRITE SERVER IN RUST!!!!!!!!!!!!!!!!!!!!
 (!!!!!!!!!(((- daily drop reminder on play page)))(!!!!!!!!
