@@ -12,7 +12,8 @@ export class Map {
     foregroundImg: string,
     collisions: number[],
     rowLength: number,
-    public spawnPoint: Vector
+    public spawnPoint: Vector,
+    public id: string
   ) {
     this.base = new GameObject(ctx, { x: 0, y: 0 }, "");
     let base = new GameObject(ctx, { x: 0, y: 0 }, baseImg);

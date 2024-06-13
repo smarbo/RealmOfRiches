@@ -1,7 +1,9 @@
 import { GameObject } from "./GameObject.js";
 import { Inventory } from "./Inventory.js";
+import { Map } from "./Map.js";
 import { Hat } from "./Player.js";
 import { Vector } from "./Vector.js";
+import { maps } from "./World.js";
 
 type Frames = {
   max: number;
@@ -26,6 +28,7 @@ export class OtherPlayer extends GameObject {
   health: number = 100;
   energy: number = 100;
   inventory: Inventory;
+  map: Map;
   constructor(
     ctx: CanvasRenderingContext2D,
     pos: Vector,
@@ -41,7 +44,8 @@ export class OtherPlayer extends GameObject {
         down: new Image(),
       },
     },
-    public username: string
+    public username: string,
+    mapId: string
   ) {
     super(ctx, pos, img);
     this.inventory = new Inventory(ctx, this);
@@ -57,6 +61,7 @@ export class OtherPlayer extends GameObject {
       side: new GameObject(ctx, this.pos, "/assets/hatSide.png"),
       back: new GameObject(ctx, this.pos, "/assets/hatBack.png"),
     };
+    this.map = maps[mapId];
   }
 
   animate() {

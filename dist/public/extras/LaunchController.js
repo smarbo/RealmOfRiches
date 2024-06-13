@@ -7,43 +7,49 @@ launchButton.onclick = () => {
 };
 //@ts-ignore
 const checkUser = async () => {
-    try {
-        const body = {
-            username: localStorage.getItem("username"),
-            password: localStorage.getItem("password"),
-        };
-        const res = await fetch("/api/user", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        });
-        if (res.status === 404) {
-            localStorage.clear();
-        }
-        const r = await res.json();
-        if (r.authenticated) {
-            localStorage.setItem("email", r.email);
-            localStorage.setItem("username", r.username);
-            localStorage.setItem("balance", r.balance);
-            localStorage.setItem("dropEligible", r.dropEligible);
-            localStorage.setItem("dropStreak", r.dropStreak);
-            localStorage.setItem("inventory", JSON.stringify(r.inventory));
-            if (r.dropEligible === true) {
-                dropMessage.style.display = "block";
+    if (localStorage.getItem("username") != undefined) {
+        try {
+            const body = {
+                username: localStorage.getItem("username"),
+                password: localStorage.getItem("password"),
+            };
+            const res = await fetch("/api/user", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            });
+            if (res.status === 404) {
+                localStorage.clear();
             }
-            else {
-                dropMessage.style.display = "none";
+            const r = await res.json();
+            console.log(r);
+            if (r.authenticated) {
+                localStorage.setItem("email", r.email);
+                localStorage.setItem("username", r.username);
+                localStorage.setItem("balance", r.balance);
+                localStorage.setItem("dropEligible", r.dropEligible);
+                localStorage.setItem("dropStreak", r.dropStreak);
+                localStorage.setItem("inventory", JSON.stringify(r.inventory));
+                if (r.dropEligible === true && r.dropEligible !== undefined) {
+                    dropMessage.style.display = "block";
+                }
+                else {
+                    dropMessage.style.display = "none";
+                }
+                return true;
             }
-            return true;
+            else if (r.authenticated === false) {
+                localStorage.clear();
+            }
         }
-        else if (r.authenticated === false) {
-            localStorage.clear();
+        catch (err) {
+            console.log(err);
         }
     }
-    catch (err) {
-        console.log(err);
+    else {
+        dropMessage.style.display = "none";
     }
 };
 if (this.localStorage.getItem("username") !== undefined) {
@@ -57,6 +63,6 @@ if (this.localStorage.getItem("username") !== undefined) {
         launchButton.innerText = "Log In";
     }
     else {
-        loggedInMessage.innerHTML = `Welcome back, ${localStorage.getItem("username")}! <a href="/" onclick="localStorage.clear();">Log Out</a><br>You have ${localStorage.getItem("balance")} gems.`;
+        loggedInMessage.innerHTML = `Welcome back, ${localStorage.getItem("username")}! <a href="/" onclick="localStorage.clear();">Log Out</a><br>You have ${parseInt(localStorage.getItem("balance")).toLocaleString()} gems.`;
     }
 }

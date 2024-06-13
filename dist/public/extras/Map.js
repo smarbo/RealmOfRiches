@@ -2,11 +2,13 @@ import { Boundary } from "./Boundary.js";
 import { GameObject } from "./GameObject.js";
 export class Map {
     spawnPoint;
+    id;
     base;
     fore;
     boundaries = [];
-    constructor(ctx, baseImg, foregroundImg, collisions, rowLength, spawnPoint) {
+    constructor(ctx, baseImg, foregroundImg, collisions, rowLength, spawnPoint, id) {
         this.spawnPoint = spawnPoint;
+        this.id = id;
         this.base = new GameObject(ctx, { x: 0, y: 0 }, "");
         let base = new GameObject(ctx, { x: 0, y: 0 }, baseImg);
         base.img.onload = () => {

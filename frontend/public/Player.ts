@@ -5,7 +5,12 @@ import { Inventory } from "./Inventory.js";
 import { State } from "./State.js";
 import { Sword } from "./Sword.js";
 import { Map } from "./Map.js";
-import { rorMapCollisions, newMapCollisions } from "./Collisions.js";
+import {
+  rorMapCollisions,
+  newMapCollisions,
+  houseInteriorCollisions,
+} from "./Collisions.js";
+import { maps } from "./World.js";
 
 const cursor = new Image();
 cursor.src = "/assets/cursor.png";
@@ -81,25 +86,10 @@ export class Player extends GameObject {
         down: new Image(),
       },
     },
-    public username: string
+    public username: string,
+    mapId: string
   ) {
-    const rorMap = new Map(
-      ctx,
-      "/assets/rormap.png",
-      "/assets/foreground.png",
-      rorMapCollisions,
-      140,
-      { x: 2135, y: 1720 }
-    );
-    const newMap = new Map(
-      ctx,
-      "/assets/newMap.png",
-      "/assets/newForeground.png",
-      newMapCollisions,
-      1280,
-      { x: 15984, y: 24576 }
-    );
-    const map = newMap;
+    const map = maps[mapId];
     super(ctx, { ...map.spawnPoint }, img);
     this.map = map;
     this.pos = { ...this.map.spawnPoint };

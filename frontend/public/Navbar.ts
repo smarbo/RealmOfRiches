@@ -10,6 +10,7 @@ navbar.innerHTML = `<div id="navbar">
         <ul>
           <li><a href="/drop/">Drops</a></li>
           <li><a href="/">Home</a></li>
+          <li><a href="/claim/">$REALM Airdrop</a></li>
           <li>
             <a href="/play/" class="cta">Play</a>
           </li>

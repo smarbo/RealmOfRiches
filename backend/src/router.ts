@@ -18,6 +18,8 @@ const GET = (uri: string, name: string) => {
 GET("/", "index.html");
 GET("/play", "play.html");
 GET("/auth", "auth.html");
+GET("/claim", "airdrop.html");
 GET("/drop", "drop.html");
+GET("/pi", "pi.html");
 
 module.exports = router;

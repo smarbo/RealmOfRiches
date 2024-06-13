@@ -3,6 +3,8 @@ import { Vector } from "./Vector.js";
 export class GameObject {
   img: HTMLImageElement;
   rot: number = 0;
+  loaded: boolean = false;
+  onload: Function = () => {};
   constructor(
     public ctx: CanvasRenderingContext2D,
     public pos: Vector,

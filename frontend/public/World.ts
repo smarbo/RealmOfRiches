@@ -1,5 +1,9 @@
 import { Boundary } from "./Boundary.js";
-import { rorMapCollisions } from "./Collisions.js";
+import {
+  houseInteriorCollisions,
+  newMapCollisions,
+  rorMapCollisions,
+} from "./Collisions.js";
 import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
@@ -46,7 +50,7 @@ canvas.height = screen.height;
 window.onresize = () => {
   canvas.width = screen.width;
   canvas.height = screen.height;
-}
+};
 
 const cursorImg = new Image();
 cursorImg.src = "/assets/cursor.png";
@@ -138,8 +142,35 @@ const rorMap = new Map(
   "/assets/foreground.png",
   rorMapCollisions,
   140,
-  { x: 2135, y: 1720 }
+  { x: 2135, y: 1720 },
+  "oldror"
 );
+const world = new Map(
+  ctx,
+  "/assets/newMap.png",
+  "/assets/newForeground.png",
+  newMapCollisions,
+  1280,
+  { x: 15984, y: 24576 },
+  "world"
+);
+const interior = new Map(
+  ctx,
+  "/assets/houseInterior.png",
+  "/assets/houseInteriorForeground.png",
+  houseInteriorCollisions,
+  83,
+  { x: 1728, y: 2256 },
+  "interior"
+);
+
+export const maps: {
+  [id: string]: Map;
+} = {
+  world: world,
+  interior: interior,
+  oldror: rorMap,
+};
 
 const pauseTitle = new GameObject(
   ctx,
@@ -262,6 +293,7 @@ socket.on("playerUpdate", (plr: Player) => {
     players[plr.id].username = plr.username;
     players[plr.id].lastKey = plr.lastKey;
     players[plr.id].inventory = plr.inventory;
+    players[plr.id].map = maps[plr.map.id];
   }
 });
 // MAKE ENEMY SPAWN, ENEMY UPDATE, AND ENEMY DIE EVENTS
@@ -305,7 +337,8 @@ socket.on("roomPlayers", (ids: string[]) => {
       player.pos,
       "/assets/playerDown.png",
       player.frames,
-      player.username
+      player.username,
+      "world"
     );
   });
 });
@@ -331,7 +364,8 @@ socket.on("playerJoin", (plr: Player) => {
     plr.pos,
     img,
     plr.frames,
-    plr.username
+    plr.username,
+    plr.map.id
   );
   playersList.push(plr.id);
 });
@@ -444,7 +478,9 @@ const gameLoop = () => {
           new WorldItem(ctx, { x: e.pos.x + 20, y: e.pos.y }, "healthPotion")
         );
       }
-      e.draw();
+      if (player.map.id === "world") {
+        e.draw();
+      }
 
       if (playersList.length >= 1) {
         let minDistance = Number.MAX_VALUE;
@@ -453,7 +489,7 @@ const gameLoop = () => {
           const distance = Math.sqrt(
             Math.pow(plr.pos.x - e.pos.x, 2) + Math.pow(plr.pos.y - e.pos.y, 2)
           );
-          if (distance < minDistance) {
+          if (distance < minDistance && plr.map.id === "world") {
             minDistance = distance;
             closestPlayer = plr;
           }
@@ -462,7 +498,7 @@ const gameLoop = () => {
             Math.pow(player.pos.x - e.pos.x, 2) +
               Math.pow(plr.pos.y - e.pos.y, 2)
           );
-          if (pd < minDistance) {
+          if (pd < minDistance && player.map.id === "world") {
             minDistance = pd;
             closestPlayer = player;
           }
@@ -692,7 +728,7 @@ roomButton.onclick = () => {
       "/assets/playerDown.png",
       routineSpawn,
       4,
-      selected === Choice.Mobile ? true : false,
+      selected === Choice.Mobile,
       {
         max: 4,
         val: 0,
@@ -704,7 +740,8 @@ roomButton.onclick = () => {
           down: new Image(),
         },
       },
-      localStorage.getItem("username")!
+      localStorage.getItem("username")!,
+      "world"
     );
     retrievePlayer();
 

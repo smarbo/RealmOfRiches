@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src=" https://cdn.jsdelivr.net/npm/web3@4.9.0/dist/web3.min.js "></script>
+	<script src="https://kit.fontawesome.com/c557e85911.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="/airdrop.css">
+	<link rel="stylesheet" href="/style.css">
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+	<title>$REALM Token Airdrop</title>
+</head>
+
+<body>
+	<div class="stuff">
+		<div class="content">
+			<h1 class="title">Welcome to the Realm Of Riches $REALM Token Airdrop.</h1>
+			<p class="description">Connect your MetaMask wallet to check your eligibility to claim $REALM on Sepolia
+				testnet</p>
+			<div class="buttons">
+				<button class="connect button" onclick="connectWallet()">Connect your wallet</button>
+			</div>
+
+		</div>
+		<div class="dashboard">
+			<h1 class="dashboardTitle">Your $REALM Airdrop Dashboard</h1>
+			<div class="dashboardItems">
+				<div class="item">
+					<h1 class="itemLabel">$REALM Balance</h1>
+					<h1 class="itemContent"><span id="balanceText">0</span> $REALM</h1>
+				</div>
+				<div class="item">
+					<h1 class="itemLabel">$REALM Eligibility</h1>
+					<h1 class="itemContent"><span id="eligibleText">0</span> $REALM</h1>
+				</div>
+				<div class="item">
+					<h1 class="itemLabel">Gems Balance</h1>
+					<h1 class="itemContent"><span id="gemsText">0</span> Gems</h1>
+				</div>
+				<div class="item">
+					<h1 class="itemLabel">Gem Drop Streak</h1>
+					<h1 class="itemContent"><span id="streakText">0</span> Days</h1>
+				</div>
+			</div>
+			<button class="dashboardButton" onclick="claimTokens()">Claim</i></button>
+		</div>
+	</div>
+
+
+	<script>
+		let web3;
+		let contract;
+		let claimAmount;
+		let gemsBalance;
+		let dropStreak;
+		let content = document.querySelector(".content");
+		let dashboard = document.querySelector(".dashboard");
+		let contractAbi = [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "ECDSAInvalidSignature",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "length",
+						"type": "uint256"
+					}
+				],
+				"name": "ECDSAInvalidSignatureLength",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "s",
+						"type": "bytes32"
+					}
+				],
+				"name": "ECDSAInvalidSignatureS",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "spender",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "allowance",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "needed",
+						"type": "uint256"
+					}
+				],
+				"name": "ERC20InsufficientAllowance",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "balance",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "needed",
+						"type": "uint256"
+					}
+				],
+				"name": "ERC20InsufficientBalance",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "approver",
+						"type": "address"
+					}
+				],
+				"name": "ERC20InvalidApprover",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "receiver",
+						"type": "address"
+					}
+				],
+				"name": "ERC20InvalidReceiver",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					}
+				],
+				"name": "ERC20InvalidSender",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "spender",
+						"type": "address"
+					}
+				],
+				"name": "ERC20InvalidSpender",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "deadline",
+						"type": "uint256"
+					}
+				],
+				"name": "ERC2612ExpiredSignature",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "signer",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "ERC2612InvalidSigner",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "currentNonce",
+						"type": "uint256"
+					}
+				],
+				"name": "InvalidAccountNonce",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidShortString",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "OwnableInvalidOwner",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "OwnableUnauthorizedAccount",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "str",
+						"type": "string"
+					}
+				],
+				"name": "StringTooLong",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "spender",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "Approval",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "EIP712DomainChanged",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "Transfer",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "DOMAIN_SEPARATOR",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "spender",
+						"type": "address"
+					}
+				],
+				"name": "allowance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "spender",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "approve",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "balanceOf",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "burn",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "burnFrom",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "claim",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "decimals",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "eip712Domain",
+				"outputs": [
+					{
+						"internalType": "bytes1",
+						"name": "fields",
+						"type": "bytes1"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "version",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "chainId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "verifyingContract",
+						"type": "address"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "salt",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "uint256[]",
+						"name": "extensions",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isEligible",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "mint",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "name",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "nonces",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "number",
+						"type": "uint256"
+					}
+				],
+				"name": "num",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "spender",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "deadline",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "v",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "r",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "s",
+						"type": "bytes32"
+					}
+				],
+				"name": "permit",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "symbol",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "totalSupply",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "transfer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "transferFrom",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		]
+		let contractAddress = "0xdA88fEa82c3AF6006BD07A7D6De43f2143a655c7";
+		const checkUser = async () => {
+			if (localStorage.getItem("username") != undefined) {
+				try {
+					const body = {
+						username: localStorage.getItem("username"),
+						password: localStorage.getItem("password"),
+					};
+					const res = await fetch("/api/user", {
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(body),
+					});
+					if (res.status === 404) {
+						localStorage.clear();
+					}
+					const r = await res.json();
+					console.log(r)
+					if (r.authenticated) {
+						localStorage.setItem("email", r.email);
+						localStorage.setItem("username", r.username);
+						localStorage.setItem("balance", r.balance);
+						localStorage.setItem("dropEligible", r.dropEligible);
+						localStorage.setItem("dropStreak", r.dropStreak);
+						localStorage.setItem("inventory", JSON.stringify(r.inventory));
+						console.log("You are logged in, ", r.username);
+						return true;
+					} else if (r.authenticated === false) {
+						localStorage.clear();
+					}
+				} catch (err) {
+					console.log(err);
+				}
+			} else {
+				localStorage.clear();
+				window.location.href = "/auth";
+			}
+		};
+
+		checkUser();
+		async function connectWallet() {
+			if (window.ethereum) {
+
+				try {
+					await window.ethereum.request({
+						method: "wallet_switchEthereumChain",
+						params: [{ chainId: "0xaa36a7" }]
+					})
+					web3 = new Web3(window.ethereum);
+					await window.ethereum.request({ method: "eth_requestAccounts" });
+					const accounts = await web3.eth.getAccounts();
+					console.log(`Connected As: ${accounts[0]}`);
+					contract = new web3.eth.Contract(contractAbi, contractAddress, {
+						from: accounts[0]
+					});
+					if (await contract.methods.balanceOf(accounts[0]).call() == 0) {
+						await ethereum.request({
+							method: 'wallet_watchAsset',
+							params: {
+								type: 'ERC20', // Initially only supports ERC20, but eventually more!
+								options: {
+									address: contractAddress, // The address that the token is at.
+									symbol: "REALM", // A ticker symbol or shorthand, up to 5 chars.
+									decimals: 18, // The number of decimals in the token
+									image: "https://realmofriches.org/favicon.ico", // A string url of the token logo
+								},
+							},
+						});
+					}
+					content.style.display = "none";
+					displayDashboard();
+				} catch (err) {
+					console.log(err);
+				}
+			} else {
+				console.log("No wallet detected!");
+			}
+		}
+
+		async function address() {
+			return (await web3.eth.getAccounts())[0];
+		}
+
+		async function claimed() {
+			if (contract) {
+				try {
+					return await contract.methods.isEligible(await address()).call()
+				} catch (err) {
+					console.log(err);
+				}
+			}
+		}
+
+		async function displayDashboard() {
+			dashboard.style.display = "flex";
+			if (contract) {
+				try {
+					await checkUser();
+					dropStreak = parseInt(localStorage.getItem("dropStreak"));
+					if (await claimed() === true) {
+						document.querySelector(".dashboardButton").disabled = "true"
+						document.querySelector(".dashboardButton").innerText = "Claim"
+						claimAmount = 0
+					} else {
+						document.querySelector(".dashboardButton").disabled = ""
+						document.querySelector(".dashboardButton").innerText = "Claim"
+						claimAmount = parseInt((100 * ((dropStreak / 4) + 1)).toFixed(0))
+					}
+					balanceText.innerText = `${(parseInt(await contract.methods.balanceOf(await address()).call()) * (10 ** -18)).toLocaleString()}`;
+					eligibleText.innerText = claimAmount.toLocaleString();
+					gemsBalance = parseInt(localStorage.getItem("balance"));
+					console.log(gemsBalance);
+					gemsText.innerText = gemsBalance.toLocaleString();
+					streakText.innerText = dropStreak.toLocaleString();
+				} catch (err) {
+					console.log(err)
+				}
+			}
+		}
+
+		async function claimTokens() {
+			if (contract) {
+				if (await claimed() === false) {
+					try {
+						let btn = document.querySelector(".dashboardButton")
+						btn.innerHTML = "<i class='fa-solid fa-spinner spinner'>";
+						btn.disabled = "true"
+						contract.methods.claim(claimAmount).send().then(() => {
+							btn.innerText = "Claim";
+							displayDashboard();
+						}).catch(() => {
+							btn.disabled = "";
+							btn.innerText = "Claim";
+							displayDashboard();
+						})
+
+					} catch (err) {
+						console.log(err);
+					}
+				} else {
+					console.log("Not eligible for airdrop!");
+					document.querySelector(".dashboardButton").disabled = "true";
+				}
+
+			}
+		}
+	</script>
+
+	<script src="/Navbar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root{
+    --background-gradient: linear-gradient(235deg, rgb(218, 162, 32),rgb(62, 16, 126));
+    --button-gradient: linear-gradient(45deg, rgb(218, 162, 32), rgb(161, 69, 201));
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: white;
+    font-family: 'Montserrat';
+    font-weight: 500;
+}
+
+html{
+    width: 100vw;
+    height: 100vh;
+}
+
+div.stuff{
+    background: var(--background-gradient);
+    width: 100vw;
+    height: 100vh;
+}
+
+.content .title{
+    font-size: 42px;
+    max-width: 800px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.content{
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.content > *{
+    margin-bottom: 40px;
+}
+
+button{
+    cursor: pointer;
+}
+
+.button{
+    width: 240px;
+    height: 60px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Montserrat Alternates';
+    font-weight: 500;
+}
+
+.connect{
+    background: var(--button-gradient);
+}
+
+.dashboard{
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(9.6px);
+    -webkit-backdrop-filter: blur(9.6px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    width: 1200px;
+    height: 600px;
+    transition: ease-in-out 0.5s all;
+}
+
+.dashboard:hover{
+    background: rgba(255,255,255,0.24);
+}
+
+.dashboardTitle{
+    text-align: center;
+    font-size: 24px;
+    text-decoration: underline;
+    text-underline-offset: 12px;
+}
+
+.dashboardItems{
+    width: 100%;
+    height: 60%;
+    display: grid;
+    padding: 25px;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    column-gap: 20px;
+    row-gap: 30px;
+}
+
+.dashboardItems .item{
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8.7px);
+    -webkit-backdrop-filter: blur(8.7px);
+    border: 1px solid rgba(255, 255, 255, 0.46);
+    padding-top: 15px;
+    padding-left: 20px;
+}
+
+.dashboardButton{
+    width: 400px;
+    align-self: center;
+    height: 80px;
+    background: var(--button-gradient);
+    font-size: 20px;
+    border: none;
+    border-radius: 20px;
+}
+
+.dashboardButton:disabled{
+    background: rgb(68, 53, 78);
+    color: rgb(82, 66, 94);
+    cursor: not-allowed;
+}
+
+.spinner{
+    animation: spin 2.4s cubic-bezier(.79,.14,.15,.86) infinite;
+}
+
+@keyframes spin{
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.item .itemLabel{
+    font-size: 25px;
+    text-decoration: underline;
+    text-underline-offset: 8px;
+    position: absolute;
+    top: 15px;
+    left: 20px;
+}
+
+.item .itemContent{
+    position: absolute;
+    bottom: 20px;
+}

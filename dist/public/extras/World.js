@@ -1,4 +1,4 @@
-import { rorMapCollisions } from "./Collisions.js";
+import { houseInteriorCollisions, newMapCollisions, rorMapCollisions, } from "./Collisions.js";
 import { GameObject } from "./GameObject.js";
 import { Player } from "./Player.js";
 import { OtherPlayer } from "./OtherPlayer.js";
@@ -101,7 +101,14 @@ const worldContainer = document.getElementById("worldContainer");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 let mouse = { x: 0, y: 0 };
-const rorMap = new Map(ctx, "/assets/rormap.png", "/assets/foreground.png", rorMapCollisions, 140, { x: 2135, y: 1720 });
+const rorMap = new Map(ctx, "/assets/rormap.png", "/assets/foreground.png", rorMapCollisions, 140, { x: 2135, y: 1720 }, "oldror");
+const world = new Map(ctx, "/assets/newMap.png", "/assets/newForeground.png", newMapCollisions, 1280, { x: 15984, y: 24576 }, "world");
+const interior = new Map(ctx, "/assets/houseInterior.png", "/assets/houseInteriorForeground.png", houseInteriorCollisions, 83, { x: 1728, y: 2256 }, "interior");
+export const maps = {
+    world: world,
+    interior: interior,
+    oldror: rorMap,
+};
 const pauseTitle = new GameObject(ctx, { x: 0, y: 0 }, "/assets/pauseTitle.png");
 const slainTitle = new GameObject(ctx, { x: 0, y: 0 }, "/assets/slainTitle.png");
 const buttons = [];
@@ -166,6 +173,7 @@ socket.on("playerUpdate", (plr) => {
         players[plr.id].username = plr.username;
         players[plr.id].lastKey = plr.lastKey;
         players[plr.id].inventory = plr.inventory;
+        players[plr.id].map = maps[plr.map.id];
     }
 });
 // MAKE ENEMY SPAWN, ENEMY UPDATE, AND ENEMY DIE EVENTS
@@ -194,7 +202,7 @@ socket.on("roomEnemies", (eIds) => {
 socket.on("roomPlayers", (ids) => {
     playersList = ids;
     playersList.forEach((id) => {
-        players[id] = new OtherPlayer(ctx, player.pos, "/assets/playerDown.png", player.frames, player.username);
+        players[id] = new OtherPlayer(ctx, player.pos, "/assets/playerDown.png", player.frames, player.username, "world");
     });
 });
 socket.on("playerJoin", (plr) => {
@@ -213,7 +221,7 @@ socket.on("playerJoin", (plr) => {
             img = "/assets/playerRight.png";
             break;
     }
-    players[plr.id] = new OtherPlayer(ctx, plr.pos, img, plr.frames, plr.username);
+    players[plr.id] = new OtherPlayer(ctx, plr.pos, img, plr.frames, plr.username, plr.map.id);
     playersList.push(plr.id);
 });
 socket.on("playerLeave", (plrId) => {
@@ -301,19 +309,21 @@ const gameLoop = () => {
                 worldItems.push(new WorldItem(ctx, { ...e.pos }, "cookie"));
                 worldItems.push(new WorldItem(ctx, { x: e.pos.x + 20, y: e.pos.y }, "healthPotion"));
             }
-            e.draw();
+            if (player.map.id === "world") {
+                e.draw();
+            }
             if (playersList.length >= 1) {
                 let minDistance = Number.MAX_VALUE;
                 playersList.forEach((plrId) => {
                     const plr = players[plrId];
                     const distance = Math.sqrt(Math.pow(plr.pos.x - e.pos.x, 2) + Math.pow(plr.pos.y - e.pos.y, 2));
-                    if (distance < minDistance) {
+                    if (distance < minDistance && plr.map.id === "world") {
                         minDistance = distance;
                         closestPlayer = plr;
                     }
                     const pd = Math.sqrt(Math.pow(player.pos.x - e.pos.x, 2) +
                         Math.pow(plr.pos.y - e.pos.y, 2));
-                    if (pd < minDistance) {
+                    if (pd < minDistance && player.map.id === "world") {
                         minDistance = pd;
                         closestPlayer = player;
                     }
@@ -525,7 +535,7 @@ roomButton.onclick = () => {
     canvas.width = document.documentElement.clientWidth;
     canvas.height = document.documentElement.clientHeight;
     if (localStorage.getItem("username") !== undefined) {
-        player = new Player(ctx, "/assets/playerDown.png", routineSpawn, 4, selected === Choice.Mobile ? true : false, {
+        player = new Player(ctx, "/assets/playerDown.png", routineSpawn, 4, selected === Choice.Mobile, {
             max: 4,
             val: 0,
             tick: 0,
@@ -535,7 +545,7 @@ roomButton.onclick = () => {
                 right: new Image(),
                 down: new Image(),
             },
-        }, localStorage.getItem("username"));
+        }, localStorage.getItem("username"), "world");
         retrievePlayer();
         player.id = socket.id;
         worldContainer.hidden = true;

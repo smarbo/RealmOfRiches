@@ -1,5 +1,6 @@
 import { GameObject } from "./GameObject.js";
 import { Inventory } from "./Inventory.js";
+import { maps } from "./World.js";
 export class OtherPlayer extends GameObject {
     frames;
     username;
@@ -13,6 +14,7 @@ export class OtherPlayer extends GameObject {
     health = 100;
     energy = 100;
     inventory;
+    map;
     constructor(ctx, pos, img, frames = {
         max: 4,
         val: 0,
@@ -23,7 +25,7 @@ export class OtherPlayer extends GameObject {
             right: new Image(),
             down: new Image(),
         },
-    }, username) {
+    }, username, mapId) {
         super(ctx, pos, img);
         this.frames = frames;
         this.username = username;
@@ -40,6 +42,7 @@ export class OtherPlayer extends GameObject {
             side: new GameObject(ctx, this.pos, "/assets/hatSide.png"),
             back: new GameObject(ctx, this.pos, "/assets/hatBack.png"),
         };
+        this.map = maps[mapId];
     }
     animate() {
         this.hat.front.pos = {

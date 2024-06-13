@@ -3,7 +3,7 @@ make upgradeable tools
 add farming
 shop
 game chat
-!interiors!
+!interiors
 buy coins smart contract sepolia testnet
 !!!new map!!!
 

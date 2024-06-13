@@ -3,6 +3,8 @@ export class GameObject {
     pos;
     img;
     rot = 0;
+    loaded = false;
+    onload = () => { };
     constructor(ctx, pos, img) {
         this.ctx = ctx;
         this.pos = pos;
