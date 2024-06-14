@@ -458,7 +458,7 @@ const gameLoop = () => {
     else if (state === State.Paused) state = State.Running;
   }
   player.animate();
-  socket.emit("playerUpdate", { ...player });
+  socket.emit("playerUpdate", { ...player, map: {id: player.map.id} });
   worldItems.forEach((g, i) => {
     g.draw(64, 64);
     if (player.grabbing) {
