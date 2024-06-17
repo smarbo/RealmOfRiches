@@ -249,10 +249,20 @@ const cursor = () => {
         ctx.drawImage(cursorImg, mouse.x, mouse.y, 48, 48);
     }
 };
+const setMap = (map, spawn) => {
+    player.map = map;
+    player.pos = spawn ? { ...spawn } : { ...map.spawnPoint };
+};
 const gameLoop = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(canvas.width / 2 - player.pos.x - player.img.width / 8, canvas.height / 2 - player.pos.y - player.img.height / 2);
+    if (player.inputs.interact && player.map.id !== maps.interior.id) {
+        setMap(maps.interior);
+    }
+    else if (player.inputs.interact && player.map.id !== maps.world.id) {
+        setMap(maps.world, player.worldPos);
+    }
     player.map.drawBase();
     if (playersList.length >= 1) {
         playersList.forEach((plrId) => {
@@ -420,17 +430,33 @@ const gameLoop = () => {
                 }
             }
             else {
-                if (player.lastKey === "w") {
-                    player.pos.y += player.speed;
+                if (player.map.id == maps.world.id) {
+                    if (player.worldLastKey === "w") {
+                        player.pos.y += player.speed;
+                    }
+                    if (player.worldLastKey === "a") {
+                        player.pos.x += player.speed;
+                    }
+                    if (player.worldLastKey === "s") {
+                        player.pos.y -= player.speed;
+                    }
+                    if (player.worldLastKey === "d") {
+                        player.pos.x -= player.speed;
+                    }
                 }
-                if (player.lastKey === "a") {
-                    player.pos.x += player.speed;
-                }
-                if (player.lastKey === "s") {
-                    player.pos.y -= player.speed;
-                }
-                if (player.lastKey === "d") {
-                    player.pos.x -= player.speed;
+                else {
+                    if (player.lastKey === "w") {
+                        player.pos.y += player.speed;
+                    }
+                    if (player.lastKey === "a") {
+                        player.pos.x += player.speed;
+                    }
+                    if (player.lastKey === "s") {
+                        player.pos.y -= player.speed;
+                    }
+                    if (player.lastKey === "d") {
+                        player.pos.x -= player.speed;
+                    }
                 }
             }
         }

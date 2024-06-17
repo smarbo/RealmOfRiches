@@ -45,6 +45,8 @@ export class Player extends GameObject {
   swordstickHand: GameObject;
   touches: TouchList | [] = [];
   inputs: Inputs;
+  worldPos: Vector;
+  worldLastKey: string;
   lastKey: string;
   width: number;
   height: number;
@@ -93,6 +95,7 @@ export class Player extends GameObject {
     super(ctx, { ...map.spawnPoint }, img);
     this.map = map;
     this.pos = { ...this.map.spawnPoint };
+    this.worldPos = {...this.pos};
     this.inventory = new Inventory(ctx, this);
     this.inputs = {
       up: false,
@@ -146,6 +149,7 @@ export class Player extends GameObject {
     };
 
     this.lastKey = "";
+    this.worldLastKey = "";
     this.frames.imgs.up.src = "/assets/playerUp.png";
     this.frames.imgs.down.src = "/assets/playerDown.png";
     this.frames.imgs.left.src = "/assets/playerLeft.png";
@@ -185,7 +189,11 @@ export class Player extends GameObject {
             break;
           case "f":
             this.inputs.use = true;
+            console.log(this.pos);
             break;
+        }
+        if(this.map.id == maps.world.id){
+          this.worldLastKey = this.lastKey;
         }
       });
       window.addEventListener("keyup", (e) => {
@@ -484,6 +492,9 @@ export class Player extends GameObject {
       x: this.pos.x - this.width / 5,
       y: this.pos.y - this.height / 2,
     };
+    if(this.map.id === maps.world.id){
+      this.worldPos = {...this.pos};
+    }
   }
   // animate player - called every frame
   animate() {
@@ -709,6 +720,9 @@ export class Player extends GameObject {
               reset();
             }
 
+            if(this.map.id==maps.world.id){
+              this.worldLastKey = this.lastKey;
+            }
             this.movestickHand.pos = {
               x: touch.x,
               y: touch.y + this.movestickHand.img.height / 8,
