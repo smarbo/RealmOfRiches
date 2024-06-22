@@ -3,9 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    *{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    h1{
+      color: white;
+      font-family: "Arial";
+      font-size: 20px;
+    }
+    code{
+      color: #AAAAAA;
+    }
+    </style>
     <title>eddie's pi</title>
 </head>
 <body style="margin: 0; padding: 0; background: black;">
-   <iframe class="mfp-iframe" frameborder="0" allowfullscreen="yes" style="width: 100vw;height: 100vh;" src="https://terminal.uk1.pitunnel.com/o1fAkYw1O525d5re9Di6bURXgH4CfRfrgyHobaJ8AOLnAM2r0MrImj1bsu3rvaLs"></iframe> 
+   <iframe frameborder="0" allowfullscreen="yes" style="width: 100vw;height: 95vh;" src="https://terminal.uk1.pitunnel.com/TCgkPB0mkrpd4XfUKVc2tF4Q5t4CkeC0fYzbj4hpM5DuCXFsEW6vekChfPUtsCrW"></iframe> 
+    <h1>SSH command: <code id="command"></code><button onclick="copy()">Copy</button></h1>
+
+    <script>
+    let cmd = "ssh raspberry@uk1.pitunnel.com -p 54139";
+    document.querySelector("#command").innerText = cmd;
+    async function copy(){
+      await navigator.clipboard.writeText(cmd);
+      window.alert(`'${cmd}' copied to clipboard!`);
+    }
+    </script>
 </body>
 </html>
